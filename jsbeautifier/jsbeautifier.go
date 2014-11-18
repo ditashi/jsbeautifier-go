@@ -133,21 +133,20 @@ func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, 
 	return sweet_code, nil
 }
 
-func (self *jsbeautifier) parse_token(token tokenizer.Token) {
-	for _, comment_token := range token.CommentsBefore() {
+func (self *jsbeautifier) parse_token(t tokenizer.Token) {
+
+	for _, comment_token := range t.CommentsBefore() {
 		self.handle_token(comment_token)
 	}
-
-	self.handle_token(token)
+	self.handle_token(t)
 
 	self.last_last_text = self.flags.last_text
-	self.last_type = token.Type()
-	self.flags.last_text = token.Text()
+	self.last_type = t.Type()
+	self.flags.last_text = t.Text()
 	self.token_pos++
 }
 
 func (self *jsbeautifier) handle_token(t tokenizer.Token) {
-	//println("Type: ", t.Type(), "Value :", t.Text())
 	newlines := t.NewLines()
 	keep_whitespace := self.options["keep_array_indentation"].(bool) && self.is_array(self.flags.mode)
 

@@ -38,7 +38,7 @@ type tokenizer struct {
 	n_newlines              int
 	whitespace_before_token string
 	in_html_comment         bool
-	acorn                   acorn
+	acorn                   *acorn
 }
 
 var whitespace = [4]string{"\n", "\r", "\t", " "}
@@ -109,6 +109,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 	}
 
 	c := string((*self.input)[self.parser_pos])
+
 	self.parser_pos++
 
 	for utils.InStrArray(c, whitespace[:]) {
@@ -275,7 +276,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 
 		if sep == "/" { //regexp
 			in_char_class = false
-			for self.parser_pos < len(*self.input) && (esc || in_char_class || string((*self.input)[self.parser_pos]) != sep) && !newline.Match([]byte(string((*self.input)[self.parser_pos]))) {
+			for self.parser_pos < len(*self.input) && (esc || in_char_class || string((*self.input)[self.parser_pos]) != sep) && !self.acorn.GetNewline().Match([]byte(string((*self.input)[self.parser_pos]))) {
 				resulting_string += string((*self.input)[self.parser_pos])
 				if !esc {
 					esc = string((*self.input)[self.parser_pos]) == "\\"
@@ -300,7 +301,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 			}*/
 
 		} else { // string
-			for self.parser_pos < len(*self.input) && (esc || (string((*self.input)[self.parser_pos]) != sep && (sep == "`" || !newline.Match([]byte(string((*self.input)[self.parser_pos])))))) {
+			for self.parser_pos < len(*self.input) && (esc || (string((*self.input)[self.parser_pos]) != sep && (sep == "`" || !self.acorn.GetNewline().Match([]byte(string((*self.input)[self.parser_pos])))))) {
 				resulting_string += string((*self.input)[self.parser_pos])
 				if esc1 > 0 && esc1 >= esc2 {
 					esc1, ok := strconv.ParseUint(resulting_string[esc2:], 16, 0)
@@ -435,5 +436,6 @@ func New(s *string, options optargs.MapType, indent_string string) *tokenizer {
 	t.input = s
 	t.options = options
 	t.indent_string = indent_string
+	t.acorn = NewAcorn()
 	return t
 }
