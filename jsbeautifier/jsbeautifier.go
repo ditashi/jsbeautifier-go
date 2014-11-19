@@ -134,6 +134,7 @@ func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, 
 }
 
 func (self *jsbeautifier) parse_token(t tokenizer.Token) {
+	t.Print()
 	for _, comment_token := range t.CommentsBefore() {
 		self.handle_token(comment_token)
 	}
@@ -690,7 +691,7 @@ func (self *jsbeautifier) handle_equals(current_token tokenizer.Token) {
 	}
 
 	if self.flags.declaration_statement {
-		self.flags.declaration_statement = true
+		self.flags.declaration_assignment = true
 	}
 
 	self.output.space_before_token = true
