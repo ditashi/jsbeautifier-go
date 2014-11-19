@@ -650,7 +650,7 @@ func (self *jsbeautifier) handle_word(current_token tokenizer.Token) {
 		self.flags.do_block = true
 	}
 
-	if current_token.Type() == "TK_RESERVED" && current_token.Text() == "io" {
+	if current_token.Type() == "TK_RESERVED" && current_token.Text() == "if" {
 		self.flags.if_block = true
 	}
 }
