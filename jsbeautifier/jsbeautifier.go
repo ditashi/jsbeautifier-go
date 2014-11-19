@@ -458,7 +458,7 @@ func (self *jsbeautifier) handle_end_block(current_token tokenizer.Token) {
 		self.restore_mode()
 	}
 
-	empty_braces := self.last_last_text == "TK_START_BLOCK"
+	empty_braces := self.last_type == "TK_START_BLOCK"
 
 	if self.options["brace_style"].(string) == "expand" {
 		if !empty_braces {
