@@ -812,21 +812,34 @@ func (self *jsbeautifier) handle_operator(current_token tokenizer.Token) {
 func (self *jsbeautifier) handle_block_comment(current_token tokenizer.Token) {
 	lines := strings.Split(strings.Replace(current_token.Text(), "\x0d", "", -1), "\x0a")
 
-	javadoc := false
-	starless := false
+	javadoc := true
+	starless := true
 	last_indent := current_token.WhitespaceBefore()
 	last_indent_length := len(last_indent)
 
 	self.print_newline(false, true)
 
 	if len(lines) > 1 {
-		// TODO: Implement Javadoc detection
-		/*
-					            if not any(l for l in lines[1:] if ( l.strip() == '' or (l.lstrip())[0] != '*')):
-			                javadoc = True
-			            elif all(l.startswith(last_indent) or l.strip() == '' for l in lines[1:]):
-			                starless = True
-		*/
+		for _, l := range lines[1:] {
+			trims := strings.TrimSpace(l)
+			if trims == "" || trims[0] != '*' {
+				javadoc = false
+				break
+			}
+		}
+
+		if !javadoc {
+			for _, l := range lines[1:] {
+				trims := strings.TrimSpace(l)
+				if trims != "" && !strings.HasPrefix(l, last_indent) {
+					starless = false
+					break
+				}
+			}
+		}
+	} else {
+		javadoc = false
+		starless = false
 	}
 
 	self.print_token(current_token, lines[0])
