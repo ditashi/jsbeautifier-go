@@ -245,7 +245,6 @@ func (self *jsbeautifier) indent() {
 
 func (self *jsbeautifier) deindent() {
 	allow_deindent := self.flags.indentation_level > 0 && ((self.flags.parent == nil) || self.flags.indentation_level > self.flags.parent.indentation_level)
-
 	if allow_deindent {
 		self.flags.indentation_level -= 1
 	}
@@ -748,7 +747,7 @@ func (self *jsbeautifier) handle_operator(current_token tokenizer.Token) {
 		self.indent()
 		self.print_token(current_token, "")
 		self.print_newline(false, false)
-		self.flags.in_case_statement = false
+		self.flags.in_case = false
 		return
 	}
 
