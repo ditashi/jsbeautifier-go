@@ -59,8 +59,8 @@ func (self *outputline) push(input string) {
 
 func (self *outputline) remove_indent() {
 	if self.indent_count > 0 {
-		self.indent_count = -1
-		self.character_count = self.parent.indent_length
+		self.indent_count -= 1
+		self.character_count -= self.parent.indent_length
 	}
 }
 
