@@ -63,3 +63,4 @@ You are free to use this in any way you want, in case you find this useful or wo
 
 ## Credits
 * Einar Lielmanis, einar@jsbeautifier.org | Original author of the jsbeautifier tool
+* [docopt](http://docopt.org) / [go-docopt](https://github.com/docopt/docopt.go) / [flynn](https://github.com/flynn/go-docopt) | For writing, porting and supporting docopt
