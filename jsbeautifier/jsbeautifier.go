@@ -134,7 +134,6 @@ func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, 
 }
 
 func (self *jsbeautifier) parse_token(t tokenizer.Token) {
-
 	for _, comment_token := range t.CommentsBefore() {
 		self.handle_token(comment_token)
 	}
@@ -615,7 +614,7 @@ func (self *jsbeautifier) handle_word(current_token tokenizer.Token) {
 	}
 
 	if current_token.Type() == "TK_RESERVED" && utils.InStrArray(current_token.Text(), []string{"else", "catch", "finally"}) {
-		if self.last_type != "TK_END_BLOCK" || self.options["brace_style"].(string) == "expand" || self.options["brace_stye"].(string) == "end-expand" || (self.options["brace-style"].(string) == "none" && current_token.WantedNewLine()) {
+		if self.last_type != "TK_END_BLOCK" || self.options["brace_style"].(string) == "expand" || self.options["brace_style"].(string) == "end-expand" || (self.options["brace_style"].(string) == "none" && current_token.WantedNewLine()) {
 			self.print_newline(false, false)
 		} else {
 			self.output.trim(true)
