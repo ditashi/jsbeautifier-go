@@ -134,6 +134,7 @@ func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, 
 }
 
 func (self *jsbeautifier) parse_token(t tokenizer.Token) {
+	t.Print()
 	for _, comment_token := range t.CommentsBefore() {
 		self.handle_token(comment_token)
 	}
@@ -202,8 +203,9 @@ func (self *jsbeautifier) allow_wrap_or_preserved_newline(current_token tokenize
 	}
 }
 
-func (self *jsbeautifier) print_newline(force_newline bool, preserve_satatement_flgs bool) {
-	if !preserve_satatement_flgs {
+func (self *jsbeautifier) print_newline(force_newline bool, preserve_satatement_flags bool) {
+	if !preserve_satatement_flags {
+
 		if self.flags.last_text != ";" && self.flags.last_text != "," && self.flags.last_text != "=" && self.last_type != "TK_OPERATOR" {
 			for self.flags.mode == Statement && !self.flags.if_block && !self.flags.do_block {
 				self.restore_mode()
@@ -498,7 +500,6 @@ func (self *jsbeautifier) handle_word(current_token tokenizer.Token) {
 	}
 
 	if self.flags.do_block && !self.flags.do_while {
-
 		if current_token.Type() == "TK_RESERVED" && current_token.Text() == "while" {
 			self.output.space_before_token = true
 			self.print_token(current_token, "")
@@ -629,7 +630,6 @@ func (self *jsbeautifier) handle_word(current_token tokenizer.Token) {
 		if self.last_type == "TK_RESERVED" && self.is_special_word(self.flags.last_text) {
 			self.output.space_before_token = true
 		} else if self.last_type != "TK_END_EXPR" {
-
 			if (self.last_type != "TK_START_EXPR" || !(current_token.Type() == "TK_RESERVED" && utils.InStrArray(current_token.Text(), []string{"var", "let", "const"}))) && self.flags.last_text != ":" {
 				if current_token.Type() == "TK_RESERVED" && current_token.Text() == "if" && self.flags.last_text == "else" {
 					self.output.space_before_token = true
