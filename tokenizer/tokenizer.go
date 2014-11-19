@@ -67,9 +67,9 @@ func (self *tokenizer) Tokenize() chan Token {
 
 			token := NewSimpleToken(token_value, tktype, self.n_newlines, self.whitespace_before_token)
 			for token.tktype == "TK_INLINE_COMMENT" || token.tktype == "TK_COMMENT" || token.tktype == "TK_BLOCK_COMMENT" || token.tktype == "TK_UNKNOWN" {
+				comments = append(comments, token)
 				token_value, tktype := self.getNextToken()
 				token = NewSimpleToken(token_value, tktype, self.n_newlines, self.whitespace_before_token)
-				comments = append(comments, token)
 			}
 			if len(comments) > 0 {
 				token.comments_before = comments
@@ -236,8 +236,9 @@ func (self *tokenizer) getNextToken() (string, string) {
 		nextCh, nextWidth := self.GetNextCharWithWidth()
 		if nextCh == "*" {
 			self.parser_pos += nextWidth
+
+			nextCh, nextWidth = self.GetNextCharWithWidth()
 			if self.parser_pos < len(*self.input) {
-				nextCh, nextWidth = self.GetNextCharWithWidth()
 				for !(nextCh == "*" && self.parser_pos+nextWidth < len(*self.input) && string((*self.input)[self.parser_pos+nextWidth]) == "/") && self.parser_pos < len(*self.input) {
 					c = self.AdvanceNextChar()
 					comment += c
@@ -248,9 +249,11 @@ func (self *tokenizer) getNextToken() (string, string) {
 					if self.parser_pos >= len(*self.input) {
 						break
 					}
+					nextCh, nextWidth = self.GetNextCharWithWidth()
 				}
 			}
 			self.parser_pos += 2
+
 			if inline_comment && self.n_newlines == 0 {
 				return "/*" + comment + "*/", "TK_INLINE_COMMENT"
 			} else {
