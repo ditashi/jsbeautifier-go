@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // Copyright (c) 2014 Ditashi Sayomi
@@ -93,6 +94,19 @@ func (self *tokenizer) Tokenize() chan Token {
 	return tkch
 }
 
+func (self *tokenizer) GetCharSlice(backoffset int, nextoffset int) string {
+	back_pos, next_pos := 0, 0
+	for i := 0; i < backoffset; i++ {
+		_, width := utf8.DecodeLastRuneInString((*self.input)[:self.parser_pos])
+		back_pos -= width
+	}
+	for i := 0; i < nextoffset; i++ {
+		_, width := utf8.DecodeRuneInString((*self.input)[self.parser_pos:])
+		next_pos += width
+	}
+	return (*self.input)[self.parser_pos-back_pos : self.parser_pos+next_pos]
+}
+
 func (self *tokenizer) getNextToken() (string, string) {
 	defer func() { self.tokens_parsed++ }()
 
@@ -108,9 +122,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 		self.last_token = NewSimpleToken("{", "TK_START_BLOCK", self.n_newlines, self.whitespace_before_token)
 	}
 
-	c := string((*self.input)[self.parser_pos])
-
-	self.parser_pos++
+	c := self.AdvanceNextChar()
 
 	for utils.InStrArray(c, whitespace[:]) {
 		if c == "\n" {
@@ -126,8 +138,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 			return "", "TK_EOF"
 		}
 
-		c = string((*self.input)[self.parser_pos])
-		self.parser_pos++
+		c = self.AdvanceNextChar()
 	}
 
 	if len(whitespace_on_this_line) != 0 {
@@ -142,37 +153,32 @@ func (self *tokenizer) getNextToken() (string, string) {
 
 		tempregex, _ := regexp.Compile("[Xx]")
 
-		if c == "0" && self.parser_pos < len(*self.input) && tempregex.Match([]byte(string((*self.input)[self.parser_pos]))) {
+		if c == "0" && self.parser_pos < len(*self.input) && tempregex.Match([]byte(self.GetNextChar())) {
 			allow_decimal = false
 			allow_e = false
-			c += string((*self.input)[self.parser_pos])
-			self.parser_pos++
+			c += self.AdvanceNextChar()
 			local_digit, _ = regexp.Compile("[0123456789abcdefABCDEF]")
 		} else {
 			c = ""
-			self.parser_pos--
+			self.BackupChar()
 		}
 
-		for self.parser_pos < len(*self.input) && local_digit.Match([]byte(string((*self.input)[self.parser_pos]))) {
-			c += string((*self.input)[self.parser_pos])
-			self.parser_pos++
+		for self.parser_pos < len(*self.input) && local_digit.Match([]byte(self.GetNextChar())) {
+			c += self.AdvanceNextChar()
 
-			if allow_decimal && self.parser_pos < len(*self.input) && string((*self.input)[self.parser_pos]) == "." {
+			if allow_decimal && self.parser_pos < len(*self.input) && self.GetNextChar() == "." {
 
-				c += string((*self.input)[self.parser_pos])
-				self.parser_pos++
+				c += self.AdvanceNextChar()
 				allow_decimal = false
 			}
 
 			tempregex, _ := regexp.Compile("[Ee]")
-			if allow_e && self.parser_pos < len(*self.input) && tempregex.Match([]byte(string((*self.input)[self.parser_pos]))) {
-				c += string((*self.input)[self.parser_pos])
-				self.parser_pos++
+			if allow_e && self.parser_pos < len(*self.input) && tempregex.Match([]byte(self.GetNextChar())) {
+				c += self.AdvanceNextChar()
 
 				tempregex, _ := regexp.Compile("[+-]")
-				if self.parser_pos < len(*self.input) && tempregex.Match([]byte(string((*self.input)[self.parser_pos]))) {
-					c += string((*self.input)[self.parser_pos])
-					self.parser_pos++
+				if self.parser_pos < len(*self.input) && tempregex.Match([]byte(self.GetNextChar())) {
+					c += self.AdvanceNextChar()
 				}
 
 				allow_e = false
@@ -183,11 +189,10 @@ func (self *tokenizer) getNextToken() (string, string) {
 		return c, "TK_WORD"
 	}
 
-	if self.acorn.IsIdentifierStart((*self.input)[self.parser_pos-1]) {
+	if self.acorn.IsIdentifierStart(self.GetLastRune()) {
 		if self.parser_pos < len(*self.input) {
-			for self.acorn.IsIdentifierChar((*self.input)[self.parser_pos]) {
-				c = c + string((*self.input)[self.parser_pos])
-				self.parser_pos++
+			for self.acorn.IsIdentifierChar(self.GetNextRune()) {
+				c += self.AdvanceNextChar()
 				if self.parser_pos == len(*self.input) {
 					break
 				}
@@ -228,17 +233,18 @@ func (self *tokenizer) getNextToken() (string, string) {
 	if c == "/" {
 		comment := ""
 		inline_comment := true
-		if string((*self.input)[self.parser_pos]) == "*" {
-			self.parser_pos++
+		nextCh, nextWidth := self.GetNextCharWithWidth()
+		if nextCh == "*" {
+			self.parser_pos += nextWidth
 			if self.parser_pos < len(*self.input) {
-				for !(string((*self.input)[self.parser_pos]) == "*" && self.parser_pos+1 < len(*self.input) && string((*self.input)[self.parser_pos+1]) == "/") && self.parser_pos < len(*self.input) {
-					c = string((*self.input)[self.parser_pos])
+				nextCh, nextWidth = self.GetNextCharWithWidth()
+				for !(nextCh == "*" && self.parser_pos+nextWidth < len(*self.input) && string((*self.input)[self.parser_pos+nextWidth]) == "/") && self.parser_pos < len(*self.input) {
+					c = self.AdvanceNextChar()
 					comment += c
 					if c == "\r" || c == "\n" {
 						inline_comment = false
 					}
 
-					self.parser_pos++
 					if self.parser_pos >= len(*self.input) {
 						break
 					}
@@ -252,11 +258,10 @@ func (self *tokenizer) getNextToken() (string, string) {
 			}
 		}
 
-		if string((*self.input)[self.parser_pos]) == "/" {
+		if self.GetNextChar() == "/" {
 			comment = c
-			for string((*self.input)[self.parser_pos]) != "\r" && string((*self.input)[self.parser_pos]) != "\n" {
-				comment += string((*self.input)[self.parser_pos])
-				self.parser_pos++
+			for self.GetNextChar() != "\r" && self.GetNextChar() != "\n" {
+				comment += self.AdvanceNextChar()
 				if self.parser_pos >= len(*self.input) {
 					break
 				}
@@ -266,6 +271,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 		}
 	}
 
+	// TODO: Implement correct rune traversing in the following condition
 	if match, _ := regexp.Match(`^<(!\[CDATA\[[\s\S]*?\]\]|[-a-zA-Z:0-9_.]+|\{[^{}]*\})\s*([-a-zA-Z:0-9_.]+=(\{[^{}]*\}|"[^"]*"|'[^']*')\s*)*\/?\s*>`, []byte(string((*self.input)[self.parser_pos-1:]))); c == "`" || c == "'" || c == "\"" || ((c == "/") || (self.options["e4x"].(bool) && c == "<" && match)) && ((self.last_token.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.text, []string{"return", "case", "throw", "else", "o", "typeof", "yield"})) || (self.last_token.tktype == "TK_END_EXPR" && self.last_token.text == ")" && self.last_token.parent != nil && self.last_token.parent.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.parent.text, []string{"if", "while", "for"})) || (utils.InStrArray(self.last_token.tktype, []string{"TK_COMMENT", "TK_START_EXPR", "TK_START_BLOCK", "TK_END_BLOCK", "TK_OPERATOR", "TK_EQUALS", "TK_EOF", "TK_SEMICOLON", "TK_COMMA"}))) {
 		sep := c
 		esc := false
@@ -341,9 +347,8 @@ func (self *tokenizer) getNextToken() (string, string) {
 			self.parser_pos++
 
 			if sep == "/" {
-				for self.parser_pos < len(*self.input) && self.acorn.IsIdentifierStart((*self.input)[self.parser_pos]) {
-					resulting_string += string((*self.input)[self.parser_pos])
-					self.parser_pos++
+				for self.parser_pos < len(*self.input) && self.acorn.IsIdentifierStart(self.GetNextRune()) {
+					resulting_string += self.AdvanceNextChar()
 				}
 			}
 		}
@@ -352,50 +357,48 @@ func (self *tokenizer) getNextToken() (string, string) {
 	}
 
 	if c == "#" {
-		if self.tokens_parsed == 0 && len(*self.input) > self.parser_pos && string((*self.input)[self.parser_pos]) == "!" {
+		if self.tokens_parsed == 0 && len(*self.input) > self.parser_pos && self.GetNextChar() == "!" {
 			resulting_string := c
 			for self.parser_pos <= len(*self.input) && c != "\n" {
-				c = string((*self.input)[self.parser_pos])
+				c = self.AdvanceNextChar()
 				resulting_string += c
-				self.parser_pos++
 			}
 			return strings.TrimSpace(resulting_string) + "\n", "TK_UNKNOWN"
 		}
 
 		sharp := "#"
-		if match := digit.Match([]byte(string((*self.input)[self.parser_pos]))); self.parser_pos < len(*self.input) && match {
+		if match := digit.Match([]byte(self.GetNextChar())); self.parser_pos < len(*self.input) && match {
 			for {
-				c = string((*self.input)[self.parser_pos])
+				c = self.AdvanceNextChar()
 				sharp += c
-				self.parser_pos++
 				if self.parser_pos >= len(*self.input) || c == "#" || c == "=" {
 					break
 				}
 			}
 		}
 
+		nextCh, nextWidth := self.GetNextCharWithWidth()
 		if c == "#" || self.parser_pos >= len(*self.input) {
 
-		} else if string((*self.input)[self.parser_pos]) == "[" && string((*self.input)[self.parser_pos+1]) == "]" {
+		} else if nextCh == "[" && string((*self.input)[self.parser_pos+nextWidth]) == "]" {
 			sharp += "[]"
 			self.parser_pos += 2
-		} else if string((*self.input)[self.parser_pos]) == "{" && string((*self.input)[self.parser_pos+1]) == "}" {
+		} else if nextCh == "{" && string((*self.input)[self.parser_pos+nextWidth]) == "}" {
 			sharp += "{}"
 			self.parser_pos += 2
 		}
 		return "sharp", "TK_WORD"
 	}
 
-	if c == "<" && (*self.input)[self.parser_pos-1:self.parser_pos+3] == "<!--" {
-		for self.parser_pos < len(*self.input) && string((*self.input)[self.parser_pos]) != "\n" {
-			c += string((*self.input)[self.parser_pos])
-			self.parser_pos++
+	if c == "<" && self.GetCharSlice(1, 3) == "<!--" {
+		for self.parser_pos < len(*self.input) && self.GetNextChar() != "\n" {
+			c += self.AdvanceNextChar()
 		}
 		self.in_html_comment = true
 		return c, "TK_COMMENT"
 	}
 
-	if c == "-" && self.in_html_comment && (*self.input)[self.parser_pos-1:self.parser_pos+2] == "-->" {
+	if c == "-" && self.in_html_comment && self.GetCharSlice(1, 2) == "-->" {
 		self.in_html_comment = false
 		self.parser_pos += 2
 		return "-->", "TK_COMMENT"
@@ -406,9 +409,8 @@ func (self *tokenizer) getNextToken() (string, string) {
 	}
 
 	if utils.InStrArray(c, punct) {
-		for self.parser_pos < len(*self.input) && utils.InStrArray(c+string((*self.input)[self.parser_pos]), punct) {
-			c += string((*self.input)[self.parser_pos])
-			self.parser_pos++
+		for self.parser_pos < len(*self.input) && utils.InStrArray(c+self.GetNextChar(), punct) {
+			c += self.AdvanceNextChar()
 			if self.parser_pos >= len(*self.input) {
 				break
 			}
@@ -431,6 +433,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 func GetLineStarters() []string {
 	return line_starters
 }
+
 func New(s *string, options optargs.MapType, indent_string string) *tokenizer {
 	t := new(tokenizer)
 	t.input = s
