@@ -94,7 +94,7 @@ func (self *tokenizer) Tokenize() chan Token {
 	return tkch
 }
 
-func (self *tokenizer) GetCharSlice(backoffset int, nextoffset int) string {
+func (self *tokenizer) GetCharSlice(backoffset int, nextoffset int) (string, bool) {
 	back_pos, next_pos := 0, 0
 	for i := 0; i < backoffset; i++ {
 		_, width := utf8.DecodeLastRuneInString((*self.input)[:self.parser_pos])
@@ -104,7 +104,10 @@ func (self *tokenizer) GetCharSlice(backoffset int, nextoffset int) string {
 		_, width := utf8.DecodeRuneInString((*self.input)[self.parser_pos:])
 		next_pos += width
 	}
-	return (*self.input)[self.parser_pos-back_pos : self.parser_pos+next_pos]
+	if self.parser_pos+next_pos > len(*self.input) || self.parser_pos-back_pos < 0 {
+		return "", false
+	}
+	return (*self.input)[self.parser_pos-back_pos : self.parser_pos+next_pos], true
 }
 
 func (self *tokenizer) getNextToken() (string, string) {
@@ -393,7 +396,8 @@ func (self *tokenizer) getNextToken() (string, string) {
 		return "sharp", "TK_WORD"
 	}
 
-	if c == "<" && self.GetCharSlice(1, 3) == "<!--" {
+	slice, out_of_bounds := self.GetCharSlice(1, 3)
+	if c == "<" && !out_of_bounds && slice == "<!--" {
 		for self.parser_pos < len(*self.input) && self.GetNextChar() != "\n" {
 			c += self.AdvanceNextChar()
 		}
@@ -401,7 +405,9 @@ func (self *tokenizer) getNextToken() (string, string) {
 		return c, "TK_COMMENT"
 	}
 
-	if c == "-" && self.in_html_comment && self.GetCharSlice(1, 2) == "-->" {
+	slice, out_of_bounds = self.GetCharSlice(1, 2)
+
+	if c == "-" && self.in_html_comment && !out_of_bounds && slice == "-->" {
 		self.in_html_comment = false
 		self.parser_pos += 2
 		return "-->", "TK_COMMENT"
