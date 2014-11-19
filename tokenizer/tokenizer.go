@@ -246,9 +246,9 @@ func (self *tokenizer) getNextToken() (string, string) {
 			}
 			self.parser_pos += 2
 			if inline_comment && self.n_newlines == 0 {
-				return "/*" + comment + "*/", "TK_INLINE_COMNENT"
+				return "/*" + comment + "*/", "TK_INLINE_COMMENT"
 			} else {
-				return "/*" + comment + "*/", "TK_BLOCK_COMNENT"
+				return "/*" + comment + "*/", "TK_BLOCK_COMMENT"
 			}
 		}
 
