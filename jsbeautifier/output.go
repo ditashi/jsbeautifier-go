@@ -1,6 +1,9 @@
 package jsbeautifier
 
-import "regexp"
+import (
+	"fmt"
+	"regexp"
+)
 
 // Copyright (c) 2014 Ditashi Sayomi
 
@@ -42,9 +45,11 @@ func (self *output) add_new_line(force_new_line bool) bool {
 	if len(self.lines) == 1 && self.just_added_newline() {
 		return false
 	}
+
 	if force_new_line || !self.just_added_newline() {
 		self.current_line = NewLine(self)
 		self.lines = append(self.lines, self.current_line)
+
 		return true
 	}
 	return false
@@ -61,7 +66,14 @@ func (self *output) get_code() string {
 	return string(re.ReplaceAll([]byte(sweet_code), []byte("")))
 }
 
+func (self *output) PrintLines() {
+	for _, val := range self.lines {
+		fmt.Println("Line: ", val, " len: ", val.get_character_count())
+	}
+}
+
 func (self *output) set_indent(level int) bool {
+
 	if len(self.lines) > 1 {
 		for level >= len(self.indent_cache) {
 			self.indent_cache = append(self.indent_cache, self.indent_cache[len(self.indent_cache)-1]+self.indent_string)
