@@ -98,16 +98,16 @@ func (self *tokenizer) GetCharSlice(backoffset int, nextoffset int) (string, boo
 	back_pos, next_pos := 0, 0
 	for i := 0; i < backoffset; i++ {
 		_, width := utf8.DecodeLastRuneInString((*self.input)[:self.parser_pos])
-		back_pos -= width
+		back_pos += width
 	}
 	for i := 0; i < nextoffset; i++ {
 		_, width := utf8.DecodeRuneInString((*self.input)[self.parser_pos:])
 		next_pos += width
 	}
 	if self.parser_pos+next_pos > len(*self.input) || self.parser_pos-back_pos < 0 {
-		return "", false
+		return "", true
 	}
-	return (*self.input)[self.parser_pos-back_pos : self.parser_pos+next_pos], true
+	return (*self.input)[self.parser_pos-back_pos : self.parser_pos+next_pos], false
 }
 
 func (self *tokenizer) getNextToken() (string, string) {
@@ -397,6 +397,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 	}
 
 	slice, out_of_bounds := self.GetCharSlice(1, 3)
+
 	if c == "<" && !out_of_bounds && slice == "<!--" {
 		for self.parser_pos < len(*self.input) && self.GetNextChar() != "\n" {
 			c += self.AdvanceNextChar()
