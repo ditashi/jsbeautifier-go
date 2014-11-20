@@ -89,6 +89,7 @@ func (self *tokenizer) Tokenize() chan Token {
 			}
 			tkch <- token
 			last = token
+			self.last_token = token
 		}
 		close(tkch)
 	}()
