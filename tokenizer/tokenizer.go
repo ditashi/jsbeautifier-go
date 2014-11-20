@@ -393,7 +393,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 			sharp += "{}"
 			self.parser_pos += 2
 		}
-		return "sharp", "TK_WORD"
+		return sharp, "TK_WORD"
 	}
 
 	slice, out_of_bounds := self.GetCharSlice(1, 3)
