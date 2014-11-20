@@ -282,7 +282,8 @@ func (self *jsbeautifier) start_of_object_property() bool {
 }
 
 func (self *jsbeautifier) start_of_statement(current_token tokenizer.Token) bool {
-	if (self.last_type == "TK_RESERVED" && utils.InStrArray(self.flags.last_text, []string{"var", "let", "const"}) && current_token.Type() == "TK_WORD") || (self.last_type == "TK_RESERVED" && self.flags.last_text == "do") || (self.last_type == "TK_RESERVED" && self.flags.last_text == "return" && !current_token.WantedNewLine()) || (self.last_type == "TK_RESERVED" && self.flags.last_text == "else" && !(current_token.Type() == "TK_RESERVED" && current_token.Text() == "if")) || (self.last_type == "TK_END_EXPR" && (self.previous_flags.mode == ForInitializer || self.previous_flags.mode == Conditional)) || (self.last_type == "TK_WORD" && self.flags.mode == BlockStatement && !self.flags.in_case && !(current_token.Type() != "TK_WORD" && !self.flags.in_case && !(current_token.Text() == "--" || current_token.Text() == "++") && current_token.Type() != "TK_WORD" && current_token.Type() != "TK_RESERVED")) || (self.flags.mode == ObjectLiteral && ((self.flags.last_text == ":" && self.flags.ternary_depth == 0) || (self.last_type == "TK_RESERVED" && utils.InStrArray(self.flags.last_text, []string{"get", "set"})))) {
+
+	if (self.last_type == "TK_RESERVED" && utils.InStrArray(self.flags.last_text, []string{"var", "let", "const"}) && current_token.Type() == "TK_WORD") || (self.last_type == "TK_RESERVED" && self.flags.last_text == "do") || (self.last_type == "TK_RESERVED" && self.flags.last_text == "return" && !current_token.WantedNewLine()) || (self.last_type == "TK_RESERVED" && self.flags.last_text == "else" && !(current_token.Type() == "TK_RESERVED" && current_token.Text() == "if")) || (self.last_type == "TK_END_EXPR" && (self.previous_flags.mode == ForInitializer || self.previous_flags.mode == Conditional)) || (self.last_type == "TK_WORD" && self.flags.mode == BlockStatement && !self.flags.in_case && !(current_token.Text() == "--" || current_token.Text() == "++") && current_token.Type() != "TK_WORD" && current_token.Type() != "TK_RESERVED") || (self.flags.mode == ObjectLiteral && ((self.flags.last_text == ":" && self.flags.ternary_depth == 0) || (self.last_type == "TK_RESERVED" && utils.InStrArray(self.flags.last_text, []string{"get", "set"})))) {
 
 		self.set_mode(Statement)
 		self.indent()
@@ -310,7 +311,6 @@ func (self *jsbeautifier) handle_start_expr(current_token tokenizer.Token) {
 	if self.start_of_statement(current_token) {
 
 	}
-
 	next_mode := Expression
 	if current_token.Text() == "[" {
 		if self.last_type == "TK_WORD" || self.flags.last_text == ")" {
@@ -370,7 +370,6 @@ func (self *jsbeautifier) handle_start_expr(current_token tokenizer.Token) {
 	if self.options["space_in_paren"].(bool) {
 		self.output.space_before_token = true
 	}
-
 	self.indent()
 }
 
@@ -876,7 +875,6 @@ func (self *jsbeautifier) handle_comment(current_token tokenizer.Token) {
 
 func (self *jsbeautifier) handle_dot(current_token tokenizer.Token) {
 	if self.start_of_statement(current_token) {
-
 	}
 
 	if self.last_type == "TK_RESERVED" && self.is_special_word(self.flags.last_text) {
