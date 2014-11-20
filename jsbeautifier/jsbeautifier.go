@@ -755,7 +755,7 @@ func (self *jsbeautifier) handle_operator(current_token tokenizer.Token) {
 		return
 	}
 
-	if current_token.WantedNewLine() && (current_token.Text() == "--" || current_token.Text() == "&&") {
+	if current_token.WantedNewLine() && (current_token.Text() == "--" || current_token.Text() == "++") {
 		self.print_newline(false, true)
 	}
 
