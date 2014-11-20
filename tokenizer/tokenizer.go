@@ -61,8 +61,9 @@ func (self *tokenizer) Tokenize() chan Token {
 		comments := make([]Token, 0)
 		open_stack := new(TokenStack)
 
+		var last Token
 		// while not (not last == None and last.type == 'TK_EOF'):
-		for self.last_token.tktype != "TK_EOF" {
+		for last.Type() == "" || last.tktype != "TK_EOF" {
 			token_value, tktype := self.getNextToken()
 
 			token := NewSimpleToken(token_value, tktype, self.n_newlines, self.whitespace_before_token)
@@ -77,7 +78,7 @@ func (self *tokenizer) Tokenize() chan Token {
 			}
 
 			if token.tktype == "TK_START_BLOCK" || token.tktype == "TK_START_EXPR" {
-				token.parent = &self.last_token
+				token.parent = &last
 				open = &token
 				open_stack.append(token)
 			} else if (token.tktype == "TK_END_BLOCK" || token.tktype == "TK_END_EXPR") && (open != nil && ((token.text == "]" && open.text == "[") ||
@@ -87,7 +88,7 @@ func (self *tokenizer) Tokenize() chan Token {
 				open = open_stack.pop()
 			}
 			tkch <- token
-			self.last_token = token
+			last = token
 		}
 		close(tkch)
 	}()
@@ -277,8 +278,9 @@ func (self *tokenizer) getNextToken() (string, string) {
 		}
 	}
 
-	// TODO: Implement correct rune traversing in the following condition
-	if match, _ := regexp.Match(`^<(!\[CDATA\[[\s\S]*?\]\]|[-a-zA-Z:0-9_.]+|\{[^{}]*\})\s*([-a-zA-Z:0-9_.]+=(\{[^{}]*\}|"[^"]*"|'[^']*')\s*)*\/?\s*>`, []byte(string((*self.input)[self.parser_pos-1:]))); c == "`" || c == "'" || c == "\"" || ((c == "/") || (self.options["e4x"].(bool) && c == "<" && match)) && ((self.last_token.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.text, []string{"return", "case", "throw", "else", "o", "typeof", "yield"})) || (self.last_token.tktype == "TK_END_EXPR" && self.last_token.text == ")" && self.last_token.parent != nil && self.last_token.parent.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.parent.text, []string{"if", "while", "for"})) || (utils.InStrArray(self.last_token.tktype, []string{"TK_COMMENT", "TK_START_EXPR", "TK_START_BLOCK", "TK_END_BLOCK", "TK_OPERATOR", "TK_EQUALS", "TK_EOF", "TK_SEMICOLON", "TK_COMMA"}))) {
+	tempr := regexp.MustCompile(`^<(!\[CDATA\[[\s\S]*?\]\]|[-a-zA-Z:0-9_.]+|\{[^{}]*\})\s*([-a-zA-Z:0-9_.]+=(\{[^{}]*\}|"[^"]*"|'[^']*')\s*)*\/?\s*>`)
+
+	if c == "`" || c == "'" || c == "\"" || ((c == "/") || (self.options["e4x"].(bool) && c == "<" && tempr.Match([]byte(string((*self.input)[self.parser_pos-1:]))))) && ((self.last_token.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.text, []string{"return", "case", "throw", "else", "do", "typeof", "yield"})) || (self.last_token.tktype == "TK_END_EXPR" && self.last_token.text == ")" && self.last_token.parent != nil && self.last_token.parent.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.parent.text, []string{"if", "while", "for"})) || (utils.InStrArray(self.last_token.tktype, []string{"TK_COMMENT", "TK_START_EXPR", "TK_START_BLOCK", "TK_END_BLOCK", "TK_OPERATOR", "TK_EQUALS", "TK_EOF", "TK_SEMICOLON", "TK_COMMA"}))) {
 		sep := c
 		esc := false
 		esc1 := 0
@@ -288,19 +290,18 @@ func (self *tokenizer) getNextToken() (string, string) {
 
 		if sep == "/" { //regexp
 			in_char_class = false
-			for self.parser_pos < len(*self.input) && (esc || in_char_class || string((*self.input)[self.parser_pos]) != sep) && !self.acorn.GetNewline().Match([]byte(string((*self.input)[self.parser_pos]))) {
-				resulting_string += string((*self.input)[self.parser_pos])
+			for self.parser_pos < len(*self.input) && (esc || in_char_class || self.GetNextChar() != sep) && !self.acorn.GetNewline().Match([]byte(self.GetNextChar())) {
+				resulting_string += self.AdvanceNextChar()
 				if !esc {
-					esc = string((*self.input)[self.parser_pos]) == "\\"
-					if string((*self.input)[self.parser_pos]) == "[" {
+					esc = self.GetLastChar() == "\\"
+					if self.GetLastChar() == "[" {
 						in_char_class = true
-					} else {
+					} else if self.GetLastChar() == "]" {
 						in_char_class = false
 					}
 				} else {
 					esc = false
 				}
-				self.parser_pos++
 			}
 		} else if self.options["e4x"].(bool) && sep == "<" { // xml
 			panic("e4x parsing is not implement yet")
@@ -313,12 +314,15 @@ func (self *tokenizer) getNextToken() (string, string) {
 			}*/
 
 		} else { // string
-			for self.parser_pos < len(*self.input) && (esc || (string((*self.input)[self.parser_pos]) != sep && (sep == "`" || !self.acorn.GetNewline().Match([]byte(string((*self.input)[self.parser_pos])))))) {
-				resulting_string += string((*self.input)[self.parser_pos])
+			for self.parser_pos < len(*self.input) && (esc || (self.GetNextChar() != sep && (sep == "`" || !self.acorn.GetNewline().Match([]byte(self.GetNextChar()))))) {
+				resulting_string += self.AdvanceNextChar()
 				if esc1 > 0 && esc1 >= esc2 {
 					esc1, ok := strconv.ParseUint(resulting_string[esc2:], 16, 0)
 
-					if ok == nil && esc1 >= 0x20 && esc1 <= 0x7e {
+					if ok != nil {
+						esc1 = 0
+					}
+					if esc1 >= 0x20 && esc1 <= 0x7e {
 						esc1c := string(esc1)
 						resulting_string = resulting_string[:len(resulting_string)-2-esc2]
 						if esc1c == sep || esc1c == "\\" {
@@ -331,26 +335,24 @@ func (self *tokenizer) getNextToken() (string, string) {
 				if esc1 > 0 {
 					esc1 += 1
 				} else if !esc {
-					esc = string((*self.input)[self.parser_pos]) == "\\"
+					esc = self.GetLastChar() == "\\"
 				} else {
 					esc = false
 					if self.options["unescape_strings"].(bool) {
-						if string((*self.input)[self.parser_pos]) == "x" {
+						if self.GetLastChar() == "x" {
 							esc1 += 1
 							esc2 = 2
-						} else if string((*self.input)[self.parser_pos]) == "u" {
+						} else if self.GetLastChar() == "u" {
 							esc1 += 1
 							esc2 = 4
 						}
 					}
 				}
-				self.parser_pos += 1
 			}
 		}
 
-		if self.parser_pos < len(*self.input) && string((*self.input)[self.parser_pos]) == sep {
-			resulting_string += sep
-			self.parser_pos++
+		if self.parser_pos < len(*self.input) && self.GetNextChar() == sep {
+			resulting_string += self.AdvanceNextChar()
 
 			if sep == "/" {
 				for self.parser_pos < len(*self.input) && self.acorn.IsIdentifierStart(self.GetNextRune()) {
@@ -433,7 +435,6 @@ func (self *tokenizer) getNextToken() (string, string) {
 		if c == "=" {
 			return c, "TK_EQUALS"
 		}
-
 		return c, "TK_OPERATOR"
 	}
 
