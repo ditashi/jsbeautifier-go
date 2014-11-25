@@ -25,12 +25,12 @@ type TokenStack struct {
 	size   int
 }
 
-func (self *TokenStack) append(t Token) {
+func (self *TokenStack) Append(t Token) {
 	self.tokens = append(self.tokens, t)
 	self.size++
 }
 
-func (self *TokenStack) pop() *Token {
+func (self *TokenStack) Pop() *Token {
 	if self.size == 0 {
 		return nil
 	}
@@ -40,6 +40,21 @@ func (self *TokenStack) pop() *Token {
 	return &t
 }
 
-func (self *TokenStack) empty() bool {
+func (self *TokenStack) Shift() *Token {
+	if self.size == 0 {
+		return nil
+	}
+
+	t := self.tokens[0]
+	if self.size == 1 {
+		self.tokens = nil
+	} else {
+		self.tokens = self.tokens[1:]
+	}
+	self.size--
+	return &t
+}
+
+func (self *TokenStack) Empty() bool {
 	return self.size == 0
 }
