@@ -55,7 +55,7 @@ Options:
 	-h --help  Show this screen
 	--version  Show version
 `
-	arguments, _ := docopt.Parse(usage, nil, true, "jsbeautifier 0.1", false)
+	arguments, _ := docopt.Parse(usage, nil, true, "jsbeautifier 0.2", false)
 
 	file := arguments.String["PATH"]
 	if arguments.Bool["--stdin"] {

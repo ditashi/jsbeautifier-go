@@ -12,11 +12,9 @@ Only basic functionality is implemented at the moment, seems to be working fine 
 
 ## What doesn't work
 * Unpacking & Deobfuscation
-* Unicode Parsing
 * e4x xml parsing
 * Some edge cases
 * Reading from stdin
-* **Tests**
 
 ## Priority
 
