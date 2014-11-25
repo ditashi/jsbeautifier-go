@@ -2,6 +2,7 @@ package jsbeautifier
 
 import (
 	"errors"
+	"io/ioutil"
 	"jsbeautifier/optargs"
 	"jsbeautifier/tokenizer"
 	"jsbeautifier/utils"
@@ -947,4 +948,20 @@ func New() *jsbeautifier {
 	b.options = default_options
 	b.blank_state(nil)
 	return b
+}
+
+func Beautify(data *string, options optargs.MapType) (string, error) {
+	b := New()
+	return b.Beautify(data, options)
+}
+
+func BeautifyFile(file string, options optargs.MapType) *string {
+	if file == "-" {
+		panic("Reading stdin not implemented yet")
+	}
+
+	data, _ := ioutil.ReadFile(file)
+	sdata := string(data)
+	val, _ := Beautify(&sdata, options)
+	return &val
 }

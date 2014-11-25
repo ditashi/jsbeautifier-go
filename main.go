@@ -8,7 +8,6 @@ import (
 	"github.com/flynn/go-docopt"
 
 	"jsbeautifier/jsbeautifier"
-	"jsbeautifier/optargs"
 )
 
 // Copyright (c) 2014 Ditashi Sayomi
@@ -30,22 +29,6 @@ import (
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
-func beautify(data *string, options optargs.MapType) (string, error) {
-	b := jsbeautifier.New()
-	return b.Beautify(data, options)
-}
-
-func beautify_file(file string, options optargs.MapType) *string {
-	if file == "-" {
-		panic("Reading stdin not implemented yet")
-	}
-
-	data, _ := ioutil.ReadFile(file)
-	sdata := string(data)
-	val, _ := beautify(&sdata, options)
-	return &val
-}
 
 func main() {
 	usage := `jsbeautifier.
@@ -137,7 +120,7 @@ Options:
 		options["wrap_line_length"] = int(options["wrap_line_length"].(int64))
 	}
 
-	code := beautify_file(file, options)
+	code := jsbeautifier.BeautifyFile(file, options)
 	if outfile == "stdout" {
 		fmt.Print(*code)
 	} else {
