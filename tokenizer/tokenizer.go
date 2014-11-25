@@ -78,14 +78,20 @@ func (self *tokenizer) Tokenize() chan Token {
 			}
 
 			if token.tktype == "TK_START_BLOCK" || token.tktype == "TK_START_EXPR" {
-				token.parent = &last
-				open = &token
-				open_stack.append(token)
+
+				token.parent = new(Token)
+				*token.parent = last
+
+				open = new(Token)
+				*open = token
+
+				open_stack.Append(token)
 			} else if (token.tktype == "TK_END_BLOCK" || token.tktype == "TK_END_EXPR") && (open != nil && ((token.text == "]" && open.text == "[") ||
 				(token.text == ")" && open.text == "(") ||
 				(token.text == "}" && open.text == "{"))) {
+
 				token.parent = open.parent
-				open = open_stack.pop()
+				open = open_stack.Pop()
 			}
 			tkch <- token
 			last = token
@@ -282,6 +288,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 	tempr := regexp.MustCompile(`^<(!\[CDATA\[[\s\S]*?\]\]|[-a-zA-Z:0-9_.]+|\{[^{}]*\})\s*([-a-zA-Z:0-9_.]+=(\{[^{}]*\}|"[^"]*"|'[^']*')\s*)*\/?\s*>`)
 
 	if c == "`" || c == "'" || c == "\"" || ((c == "/") || (self.options["e4x"].(bool) && c == "<" && tempr.Match([]byte(string((*self.input)[self.parser_pos-1:]))))) && ((self.last_token.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.text, []string{"return", "case", "throw", "else", "do", "typeof", "yield"})) || (self.last_token.tktype == "TK_END_EXPR" && self.last_token.text == ")" && self.last_token.parent != nil && self.last_token.parent.tktype == "TK_RESERVED" && utils.InStrArray(self.last_token.parent.text, []string{"if", "while", "for"})) || (utils.InStrArray(self.last_token.tktype, []string{"TK_COMMENT", "TK_START_EXPR", "TK_START_BLOCK", "TK_END_BLOCK", "TK_OPERATOR", "TK_EQUALS", "TK_EOF", "TK_SEMICOLON", "TK_COMMA"}))) {
+
 		sep := c
 		esc := false
 		esc1 := 0
@@ -303,6 +310,7 @@ func (self *tokenizer) getNextToken() (string, string) {
 				} else {
 					esc = false
 				}
+
 			}
 		} else if self.options["e4x"].(bool) && sep == "<" { // xml
 			panic("e4x parsing is not implement yet")
@@ -361,7 +369,6 @@ func (self *tokenizer) getNextToken() (string, string) {
 				}
 			}
 		}
-
 		return resulting_string, "TK_STRING"
 	}
 
