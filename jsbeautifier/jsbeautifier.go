@@ -82,7 +82,7 @@ type jsbeautifier struct {
 	ternary_depth    int
 	indent_string    string
 	baseIndentString string
-	token_queue      []tokenizer.Token
+	token_queue      tokenizer.TokenStack
 	tkch             chan tokenizer.Token
 }
 
@@ -119,10 +119,11 @@ func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, 
 
 	for token := range self.tkch {
 		self.parse_token(token)
-		for _, qtoken := range self.token_queue {
-			self.parse_token(qtoken)
+
+		for !self.token_queue.Empty() {
+			qtoken := self.token_queue.Shift()
+			self.parse_token(*qtoken)
 		}
-		self.token_queue = make([]tokenizer.Token, 0)
 	}
 
 	sweet_code := self.output.get_code()
@@ -146,6 +147,7 @@ func (self *jsbeautifier) parse_token(t tokenizer.Token) {
 }
 
 func (self *jsbeautifier) handle_token(t tokenizer.Token) {
+
 	newlines := t.NewLines()
 	keep_whitespace := self.options["keep_array_indentation"].(bool) && self.is_array(self.flags.mode)
 
@@ -303,7 +305,8 @@ func (self *jsbeautifier) start_of_statement(current_token tokenizer.Token) bool
 
 func (self *jsbeautifier) get_token() (tokenizer.Token, bool) {
 	token, more := <-self.tkch
-	self.token_queue = append(self.token_queue, token)
+	self.token_queue.Append(token)
+
 	return token, more
 }
 
