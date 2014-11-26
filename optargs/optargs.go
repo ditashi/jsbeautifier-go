@@ -21,3 +21,11 @@ package optargs
 // SOFTWARE.
 
 type MapType map[string]interface{}
+
+func (self *MapType) Copy(other MapType) {
+	*self = make(MapType)
+
+	for key, val := range other {
+		(*self)[key] = val
+	}
+}
