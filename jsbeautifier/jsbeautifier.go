@@ -103,7 +103,7 @@ func (self *jsbeautifier) unpack(s *string, eval_code bool) *string {
 	return s
 }
 
-func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, error) {
+func (self *jsbeautifier) beautify(s *string, options optargs.MapType) (string, error) {
 
 	if !utils.InStrArray(options["brace_style"].(string), []string{"expand", "collapse", "end-expand", "none"}) {
 		return "", errors.New("opts.brace-style must be \"expand\", \"collapse\", \"end-exapnd\", or \"none\".")
@@ -953,7 +953,7 @@ func New(options optargs.MapType) *jsbeautifier {
 
 func Beautify(data *string, options optargs.MapType) (string, error) {
 	b := New(options)
-	return b.Beautify(data, options)
+	return b.beautify(data, options)
 }
 
 func BeautifyFile(file string, options optargs.MapType) *string {
