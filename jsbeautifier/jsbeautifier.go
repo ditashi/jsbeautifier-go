@@ -136,6 +136,7 @@ func (self *jsbeautifier) Beautify(s *string, options optargs.MapType) (string, 
 }
 
 func (self *jsbeautifier) parse_token(t tokenizer.Token) {
+
 	for _, comment_token := range t.CommentsBefore() {
 		self.handle_token(comment_token)
 	}
@@ -168,7 +169,6 @@ func (self *jsbeautifier) handle_token(t tokenizer.Token) {
 			}
 		}
 	}
-
 	handlers[t.Type()](self, t)
 }
 
@@ -306,7 +306,10 @@ func (self *jsbeautifier) start_of_statement(current_token tokenizer.Token) bool
 
 func (self *jsbeautifier) get_token() (tokenizer.Token, bool) {
 	token, more := <-self.tkch
-	self.token_queue.Append(token)
+
+	if more {
+		self.token_queue.Append(token)
+	}
 
 	return token, more
 }
