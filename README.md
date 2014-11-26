@@ -7,23 +7,24 @@ This is a port of the awesome [jsbeautifier](http://jsbeautifier.org/) tool to g
 
 Granted this is a very basic and naive attempt since this is one of my first takes with golang.
 
-## Current state:
-Only basic functionality is implemented at the moment, seems to be working fine on basic javascript snippets but more extensive tests are required
+## Current state
+Implemented most of the original features from jsbeautifier (missing featuers are listed in the following section).
 
 ## What doesn't work
-* Unpacking & Deobfuscation
+* Unpacking & Deobfuscation (and with that code eval)
 * e4x xml parsing
-* Some edge cases
 * Reading from stdin
 
 ## Priority
-
 1. Finish implementing features to match the current state of JsBeautifier
-2. **Tests**
-3. Unpacking & Deobfuscation
+2. Unpacking & Deobfuscation
 
 ## Usage
 ``` go get && go run main.go test.js ```
+
+### Testing
+From within the source folder run:
+``` go test ./... ```` or use something like [goconvey](https://github.com/smartystreets/goconvey)
 
 ## Options
 
