@@ -259,7 +259,7 @@ func TestBeautifier(t *testing.T) {
 	test("<!--\nvoid();\n// -->")
 
 	// incomplete regexp
-	/*test("a=/regexp", "a = /regexp")
+	test("a=/regexp", "a = /regexp")
 	test("{a:#1=[],b:#1#,c:#999999#}", "{\n    a: #1=[],\n    b: #1#,\n    c: #999999#\n}")
 	test("a = 1e+2")
 	test("a = 1e-2")
@@ -267,9 +267,9 @@ func TestBeautifier(t *testing.T) {
 	test("x(); /reg/exp.match(something)", "x();\n/reg/exp.match(something)")
 	test("something();(", "something();\n(")
 	test("#!she/bangs, she bangs\nf=1", "#!she/bangs, she bangs\n\nf = 1")
-	test("#!she/bangs, she bangs\n\nf=1", "#!she/bangs, she bangs\n\nf = 1")*/
-	//test("#!she/bangs, she bangs\n\n/* comment */")
-	//test("#!she/bangs, she bangs\n\n\n/* comment */")
+	test("#!she/bangs, she bangs\n\nf=1", "#!she/bangs, she bangs\n\nf = 1")
+	test("#!she/bangs, she bangs\n\n/* comment */")
+	test("#!she/bangs, she bangs\n\n\n/* comment */")
 	/*test("#")
 	test("#!")
 	test("function namespace::something()")
@@ -379,7 +379,656 @@ func TestBeautifier(t *testing.T) {
 	test("var a = function() {\n    func1()\n}\nvar b = function() {\n    func2()\n}")
 
 	// Code with and without semicolons
+	test("var whatever = require(\"whatever\");\nfunction() {\n    a = 6;\n}",
+		"var whatever = require(\"whatever\");\n\nfunction() {\n    a = 6;\n}")
+	test("var whatever = require(\"whatever\")\nfunction() {\n    a = 6\n}", "var whatever = require(\"whatever\")\n\nfunction() {\n    a = 6\n}")
 
+	test_options["space_after_anon_function"] = true
+
+	test("switch(x) {case 0: case 1: a(); break; default: break}",
+		"switch (x) {\n    case 0:\n    case 1:\n        a();\n        break;\n    default:\n        break\n}")
+	test("switch(x){case -1:break;case !y:break;}", "switch (x) {\n    case -1:\n        break;\n    case !y:\n        break;\n}")
+	test("a=typeof(x)", "a = typeof (x)")
+	test("x();\n\nfunction(){}", "x();\n\nfunction () {}")
+	test("function () {\n    var a, b, c, d, e = [],\n        f;\n}")
+	test("// comment 1\n(function()", "// comment 1\n(function ()")
+	test("var o1=$.extend(a);function(){alert(x);}", "var o1 = $.extend(a);\n\nfunction () {\n    alert(x);\n}")
+	test("function* () {\n    yield 1;\n}")
+
+	test_options["space_after_anon_function"] = false
+
+	test_options["jslint_happy"] = true
+
+	test("x();\n\nfunction(){}", "x();\n\nfunction () {}")
+	test("function () {\n    var a, b, c, d, e = [],\n        f;\n}")
+	test("switch(x) {case 0: case 1: a(); break; default: break}", "switch (x) {\ncase 0:\ncase 1:\n    a();\n    break;\ndefault:\n    break\n}")
+	test("switch(x){case -1:break;case !y:break;}", "switch (x) {\ncase -1:\n    break;\ncase !y:\n    break;\n}")
+	test("// comment 1\n(function()", "// comment 1\n(function ()")
+	test("var o1=$.extend(a);function(){alert(x);}", "var o1 = $.extend(a);\n\nfunction () {\n    alert(x);\n}")
+	test("a=typeof(x)", "a = typeof (x)")
+	test("function* () {\n    yield 1;\n}")
+
+	test_options["jslint_happy"] = false
+	test("switch(x) {case 0: case 1: a(); break; default: break}", "switch (x) {\n    case 0:\n    case 1:\n        a();\n        break;\n    default:\n        break\n}")
+	test("switch(x){case -1:break;case !y:break;}", "switch (x) {\n    case -1:\n        break;\n    case !y:\n        break;\n}")
+
+	test("// comment 2\n(function()", "// comment 2\n(function()")
+
+	test("var a2, b2, c2, d2 = 0, c = function() {}, d = '';", "var a2, b2, c2, d2 = 0,\n    c = function() {},\n    d = '';")
+	test("var a2, b2, c2, d2 = 0, c = function() {},\nd = '';", "var a2, b2, c2, d2 = 0,\n    c = function() {},\n    d = '';")
+	test("var o2=$.extend(a);function(){alert(x);}", "var o2 = $.extend(a);\n\nfunction() {\n    alert(x);\n}")
+	test("function*() {\n    yield 1;\n}")
+	test("function* x() {\n    yield 1;\n}")
+
+	test("{\"x\":[{\"a\":1,\"b\":3},\n7,8,8,8,8,{\"b\":99},{\"a\":11}]}", "{\n    \"x\": [{\n            \"a\": 1,\n            \"b\": 3\n        },\n        7, 8, 8, 8, 8, {\n            \"b\": 99\n        }, {\n            \"a\": 11\n        }\n    ]\n}")
+	test("{\"x\":[{\"a\":1,\"b\":3},7,8,8,8,8,{\"b\":99},{\"a\":11}]}", "{\n    \"x\": [{\n        \"a\": 1,\n        \"b\": 3\n    }, 7, 8, 8, 8, 8, {\n        \"b\": 99\n    }, {\n        \"a\": 11\n    }]\n}")
+
+	test("{\"1\":{\"1a\":\"1b\"},\"2\"}", "{\n    \"1\": {\n        \"1a\": \"1b\"\n    },\n    \"2\"\n}")
+	test("{a:{a:b},c}", "{\n    a: {\n        a: b\n    },\n    c\n}")
+
+	test("{[y[a]];keep_indent;}", "{\n    [y[a]];\n    keep_indent;\n}")
+
+	test("if (x) {y} else { if (x) {y}}", "if (x) {\n    y\n} else {\n    if (x) {\n        y\n    }\n}")
+
+	test("if (foo) one()\ntwo()\nthree()")
+	test("if (1 + foo() && bar(baz()) / 2) one()\ntwo()\nthree()")
+	test("if (1 + foo() && bar(baz()) / 2) one();\ntwo();\nthree();")
+
+	test_options["indent_size"] = 1
+	test_options["indent_char"] = " "
+	test("{ one_char() }", "{\n one_char()\n}")
+
+	test("var a,b=1,c=2", "var a, b = 1,\n c = 2")
+
+	test_options["indent_size"] = 4
+	test_options["indent_char"] = " "
+	test("{ one_char() }", "{\n    one_char()\n}")
+
+	test_options["indent_size"] = 1
+	test_options["indent_char"] = "\t"
+	test("{ one_char() }", "{\n\tone_char()\n}")
+	test("x = a ? b : c; x;", "x = a ? b : c;\nx;")
+
+	test_options["indent_size"] = 5
+	test_options["indent_char"] = " "
+	test_options["indent_with_tabs"] = true
+
+	test("{ one_char() }", "{\n\tone_char()\n}")
+	test("x = a ? b : c; x;", "x = a ? b : c;\nx;")
+
+	test_options["indent_size"] = 4
+	test_options["indent_char"] = " "
+	test_options["indent_with_tabs"] = false
+
+	test_options["preserve_newlines"] = false
+	test("var\na=dont_preserve_newlines;", "var a = dont_preserve_newlines;")
+
+	test("function foo() {\n    return 1;\n}\n\nfunction foo() {\n    return 1;\n}")
+	test("function foo() {\n    return 1;\n}\nfunction foo() {\n    return 1;\n}", "function foo() {\n    return 1;\n}\n\nfunction foo() {\n    return 1;\n}")
+	test("function foo() {\n    return 1;\n}\n\n\nfunction foo() {\n    return 1;\n}", "function foo() {\n    return 1;\n}\n\nfunction foo() {\n    return 1;\n}")
+
+	test_options["preserve_newlines"] = true
+	test("var\na=do_preserve_newlines;", "var\n    a = do_preserve_newlines;")
+	test("// a\n// b\n\n// c\n// d")
+	test("if (foo) //  comment\n{\n    bar();\n}")
+
+	test_options["keep_array_indentation"] = false
+	test("a = ['a', 'b', 'c',\n    'd', 'e', 'f']",
+		"a = ['a', 'b', 'c',\n    'd', 'e', 'f'\n]")
+	test("a = ['a', 'b', 'c',\n    'd', 'e', 'f',\n        'g', 'h', 'i']",
+		"a = ['a', 'b', 'c',\n    'd', 'e', 'f',\n    'g', 'h', 'i'\n]")
+	test("a = ['a', 'b', 'c',\n        'd', 'e', 'f',\n            'g', 'h', 'i']",
+		"a = ['a', 'b', 'c',\n    'd', 'e', 'f',\n    'g', 'h', 'i'\n]")
+	test("var x = [{}\n]", "var x = [{}]")
+	test("var x = [{foo:bar}\n]", "var x = [{\n    foo: bar\n}]")
+	test("a = ['something',\n    'completely',\n    'different'];\nif (x);",
+		"a = ['something',\n    'completely',\n    'different'\n];\nif (x);")
+	test("a = ['a','b','c']", "a = ['a', 'b', 'c']")
+	test("a = ['a',   'b','c']", "a = ['a', 'b', 'c']")
+	test("x = [{'a':0}]",
+		"x = [{\n    'a': 0\n}]")
+	test("{a([[a1]], {b;});}", "{\n    a([\n        [a1]\n    ], {\n        b;\n    });\n}")
+	test("a();\n   [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
+		"a();\n[\n    ['sdfsdfsd'],\n    ['sdfsdfsdf']\n].toString();")
+	test("a();\na = [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
+		"a();\na = [\n    ['sdfsdfsd'],\n    ['sdfsdfsdf']\n].toString();")
+	test("function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}",
+		"function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}")
+	test("function foo() {\n    return [\n        \"one\",\n        \"two\"\n    ];\n}")
+	// 4 spaces per indent input, processed with 4-spaces per indent
+	test("function foo() {\n"+
+		"    return [\n"+
+		"        {\n"+
+		"            one: 'x',\n"+
+		"            two: [\n"+
+		"                {\n"+
+		"                    id: 'a',\n"+
+		"                    name: 'apple'\n"+
+		"                }, {\n"+
+		"                    id: 'b',\n"+
+		"                    name: 'banana'\n"+
+		"                }\n"+
+		"            ]\n"+
+		"        }\n"+
+		"    ];\n"+
+		"}",
+		"function foo() {\n"+
+			"    return [{\n"+
+			"        one: 'x',\n"+
+			"        two: [{\n"+
+			"            id: 'a',\n"+
+			"            name: 'apple'\n"+
+			"        }, {\n"+
+			"            id: 'b',\n"+
+			"            name: 'banana'\n"+
+			"        }]\n"+
+			"    }];\n"+
+			"}")
+
+	test("function foo() {\n"+
+		"   return [\n"+
+		"      {\n"+
+		"         one: 'x',\n"+
+		"         two: [\n"+
+		"            {\n"+
+		"               id: 'a',\n"+
+		"               name: 'apple'\n"+
+		"            }, {\n"+
+		"               id: 'b',\n"+
+		"               name: 'banana'\n"+
+		"            }\n"+
+		"         ]\n"+
+		"      }\n"+
+		"   ];\n"+
+		"}",
+		"function foo() {\n"+
+			"    return [{\n"+
+			"        one: 'x',\n"+
+			"        two: [{\n"+
+			"            id: 'a',\n"+
+			"            name: 'apple'\n"+
+			"        }, {\n"+
+			"            id: 'b',\n"+
+			"            name: 'banana'\n"+
+			"        }]\n"+
+			"    }];\n"+
+			"}")
+
+	test_options["keep_array_indentation"] = true
+	test("a = ['a', 'b', 'c',\n    'd', 'e', 'f']")
+	test("a = ['a', 'b', 'c',\n    'd', 'e', 'f',\n        'g', 'h', 'i']")
+	test("a = ['a', 'b', 'c',\n        'd', 'e', 'f',\n            'g', 'h', 'i']")
+	test("var x = [{}\n]", "var x = [{}\n]")
+	test("var x = [{foo:bar}\n]", "var x = [{\n        foo: bar\n    }\n]")
+	test("a = ['something',\n    'completely',\n    'different'];\nif (x);")
+	test("a = ['a','b','c']", "a = ['a', 'b', 'c']")
+	test("a = ['a',   'b','c']", "a = ['a', 'b', 'c']")
+	test("x = [{'a':0}]",
+		"x = [{\n    'a': 0\n}]")
+	test("{a([[a1]], {b;});}", "{\n    a([[a1]], {\n        b;\n    });\n}")
+	test("a();\n   [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
+		"a();\n   [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();")
+	test("a();\na = [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
+		"a();\na = [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();")
+	test("function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}",
+		"function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}")
+	test("function foo() {\n    return [\n        \"one\",\n        \"two\"\n    ];\n}")
+
+	test("function foo() {\n" +
+		"    return [\n" +
+		"        {\n" +
+		"            one: 'x',\n" +
+		"            two: [\n" +
+		"                {\n" +
+		"                    id: 'a',\n" +
+		"                    name: 'apple'\n" +
+		"                }, {\n" +
+		"                    id: 'b',\n" +
+		"                    name: 'banana'\n" +
+		"                }\n" +
+		"            ]\n" +
+		"        }\n" +
+		"    ];\n" +
+		"}")
+
+	test_options["keep_array_indentation"] = false
+
+	test("a = //comment\n    /regex/;")
+
+	test("/*\n * X\n */")
+	test("/*\r\n * X\r\n */", "/*\n * X\n */")
+
+	test("if (a)\n{\nb;\n}\nelse\n{\nc;\n}", "if (a) {\n    b;\n} else {\n    c;\n}")
+
+	test("var a = new function();")
+	test("new function")
+
+	test_options["brace_style"] = "expand"
+
+	test("//case 1\nif (a == 1)\n{}\n//case 2\nelse if (a == 2)\n{}")
+	test("if(1){2}else{3}", "if (1)\n{\n    2\n}\nelse\n{\n    3\n}")
+	test("try{a();}catch(b){c();}catch(d){}finally{e();}", "try\n{\n    a();\n}\ncatch (b)\n{\n    c();\n}\ncatch (d)\n{}\nfinally\n{\n    e();\n}")
+	test("if(a){b();}else if(c) foo();", "if (a)\n{\n    b();\n}\nelse if (c) foo();")
+	test("if (a) {\n// comment\n}else{\n// comment\n}",
+		"if (a)\n{\n    // comment\n}\nelse\n{\n    // comment\n}")
+	test("if (x) {y} else { if (x) {y}}", "if (x)\n{\n    y\n}\nelse\n{\n    if (x)\n    {\n        y\n    }\n}")
+	test("if (a)\n{\nb;\n}\nelse\n{\nc;\n}", "if (a)\n{\n    b;\n}\nelse\n{\n    c;\n}")
+	test("    /*\n* xx\n*/\n// xx\nif (foo) {\n    bar();\n}", "    /*\n     * xx\n     */\n    // xx\n    if (foo)\n    {\n        bar();\n    }")
+	test("if (foo)\n{}\nelse /regex/.test();")
+	test("if (foo) {", "if (foo)\n{")
+	test("foo {", "foo\n{")
+	test("return {", "return {")
+	test("return /* inline */ {", "return /* inline */ {")
+	test("return;\n{", "return;\n{")
+	test("throw {}")
+	test("throw {\n    foo;\n}")
+	test("var foo = {}")
+	test("function x() {\n    foo();\n}zzz", "function x()\n{\n    foo();\n}\nzzz")
+	test("a: do {} while (); xxx", "a: do {} while ();\nxxx")
+	test("{a: do {} while (); xxx}", "{\n    a: do {} while ();xxx\n}")
+	test("var a = new function() {};")
+	test("var a = new function a() {};", "var a = new function a()\n{};")
+	test("var a = new function()\n{};", "var a = new function() {};")
+	test("var a = new function a()\n{};")
+	test("var a = new function a()\n    {},\n    b = new function b()\n    {};")
+	test("foo({\n    'a': 1\n},\n10);",
+		"foo(\n    {\n        'a': 1\n    },\n    10);")
+	test("([\"foo\",\"bar\"]).each(function(i) {return i;});", "([\"foo\", \"bar\"]).each(function(i)\n{\n    return i;\n});")
+	test("(function(i) {return i;})();", "(function(i)\n{\n    return i;\n})();")
+	test("test( /*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test(\n"+
+		"/*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"},\n"+
+		"/*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test(\n"+
+			"    /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test( /*Argument 1*/\n"+
+		"{\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */\n"+
+		"{\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+
+	test_options["brace_style"] = "collapse"
+
+	test("//case 1\nif (a == 1) {}\n//case 2\nelse if (a == 2) {}")
+	test("if(1){2}else{3}", "if (1) {\n    2\n} else {\n    3\n}")
+	test("try{a();}catch(b){c();}catch(d){}finally{e();}", "try {\n    a();\n} catch (b) {\n    c();\n} catch (d) {} finally {\n    e();\n}")
+	test("if(a){b();}else if(c) foo();", "if (a) {\n    b();\n} else if (c) foo();")
+	test("if (a) {\n// comment\n}else{\n// comment\n}",
+		"if (a) {\n    // comment\n} else {\n    // comment\n}")
+	test("if (x) {y} else { if (x) {y}}", "if (x) {\n    y\n} else {\n    if (x) {\n        y\n    }\n}")
+	test("if (a)\n{\nb;\n}\nelse\n{\nc;\n}", "if (a) {\n    b;\n} else {\n    c;\n}")
+	test("    /*\n* xx\n*/\n// xx\nif (foo) {\n    bar();\n}", "    /*\n     * xx\n     */\n    // xx\n    if (foo) {\n        bar();\n    }")
+	test("if (foo) {} else /regex/.test();")
+	test("if (foo) {", "if (foo) {")
+	test("foo {", "foo {")
+	test("return {", "return {")
+	test("return /* inline */ {", "return /* inline */ {")
+	test("return;\n{", "return; {")
+	test("throw {}")
+	test("throw {\n    foo;\n}")
+	test("var foo = {}")
+	test("function x() {\n    foo();\n}zzz", "function x() {\n    foo();\n}\nzzz")
+	test("a: do {} while (); xxx", "a: do {} while ();\nxxx")
+	test("{a: do {} while (); xxx}", "{\n    a: do {} while ();xxx\n}")
+	test("var a = new function() {};")
+	test("var a = new function a() {};")
+	test("var a = new function()\n{};", "var a = new function() {};")
+	test("var a = new function a()\n{};", "var a = new function a() {};")
+	test("var a = new function a()\n    {},\n    b = new function b()\n    {};", "var a = new function a() {},\n    b = new function b() {};")
+	test("foo({\n    'a': 1\n},\n10);",
+		"foo({\n        'a': 1\n    },\n    10);")
+	test("([\"foo\",\"bar\"]).each(function(i) {return i;});", "([\"foo\", \"bar\"]).each(function(i) {\n    return i;\n});")
+	test("(function(i) {return i;})();", "(function(i) {\n    return i;\n})();")
+	test("test( /*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/ {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test(\n"+
+		"/*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"},\n"+
+		"/*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test(\n"+
+			"    /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test( /*Argument 1*/\n"+
+		"{\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */\n"+
+		"{\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/ {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+
+	test_options["brace_style"] = "end-expand"
+
+	test("//case 1\nif (a == 1) {}\n//case 2\nelse if (a == 2) {}")
+	test("if(1){2}else{3}", "if (1) {\n    2\n}\nelse {\n    3\n}")
+	test("try{a();}catch(b){c();}catch(d){}finally{e();}", "try {\n    a();\n}\ncatch (b) {\n    c();\n}\ncatch (d) {}\nfinally {\n    e();\n}")
+	test("if(a){b();}else if(c) foo();", "if (a) {\n    b();\n}\nelse if (c) foo();")
+	test("if (a) {\n// comment\n}else{\n// comment\n}",
+		"if (a) {\n    // comment\n}\nelse {\n    // comment\n}")
+	test("if (x) {y} else { if (x) {y}}", "if (x) {\n    y\n}\nelse {\n    if (x) {\n        y\n    }\n}")
+	test("if (a)\n{\nb;\n}\nelse\n{\nc;\n}", "if (a) {\n    b;\n}\nelse {\n    c;\n}")
+	test("    /*\n* xx\n*/\n// xx\nif (foo) {\n    bar();\n}", "    /*\n     * xx\n     */\n    // xx\n    if (foo) {\n        bar();\n    }")
+	test("if (foo) {}\nelse /regex/.test();")
+	test("if (foo) {", "if (foo) {")
+	test("foo {", "foo {")
+	test("return {", "return {")
+	test("return /* inline */ {", "return /* inline */ {")
+	test("return;\n{", "return; {")
+	test("throw {}")
+	test("throw {\n    foo;\n}")
+	test("var foo = {}")
+	test("function x() {\n    foo();\n}zzz", "function x() {\n    foo();\n}\nzzz")
+	test("a: do {} while (); xxx", "a: do {} while ();\nxxx")
+	test("{a: do {} while (); xxx}", "{\n    a: do {} while ();xxx\n}")
+	test("var a = new function() {};")
+	test("var a = new function a() {};")
+	test("var a = new function()\n{};", "var a = new function() {};")
+	test("var a = new function a()\n{};", "var a = new function a() {};")
+	test("var a = new function a()\n    {},\n    b = new function b()\n    {};", "var a = new function a() {},\n    b = new function b() {};")
+	test("foo({\n    'a': 1\n},\n10);",
+		"foo({\n        'a': 1\n    },\n    10);")
+	test("([\"foo\",\"bar\"]).each(function(i) {return i;});", "([\"foo\", \"bar\"]).each(function(i) {\n    return i;\n});")
+	test("(function(i) {return i;})();", "(function(i) {\n    return i;\n})();")
+	test("test( /*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/ {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test(\n"+
+		"/*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"},\n"+
+		"/*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test(\n"+
+			"    /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test( /*Argument 1*/\n"+
+		"{\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */\n"+
+		"{\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/ {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+
+	test_options["brace_style"] = "none"
+
+	test("//case 1\nif (a == 1)\n{}\n//case 2\nelse if (a == 2)\n{}")
+	test("if(1){2}else{3}", "if (1) {\n    2\n} else {\n    3\n}")
+	test("try{a();}catch(b){c();}catch(d){}finally{e();}", "try {\n    a();\n} catch (b) {\n    c();\n} catch (d) {} finally {\n    e();\n}")
+	test("if(a){b();}else if(c) foo();", "if (a) {\n    b();\n} else if (c) foo();")
+	test("if (a) {\n// comment\n}else{\n// comment\n}",
+		"if (a) {\n    // comment\n} else {\n    // comment\n}")
+	test("if (x) {y} else { if (x) {y}}", "if (x) {\n    y\n} else {\n    if (x) {\n        y\n    }\n}")
+	test("if (a)\n{\nb;\n}\nelse\n{\nc;\n}", "if (a)\n{\n    b;\n}\nelse\n{\n    c;\n}")
+	test("    /*\n* xx\n*/\n// xx\nif (foo) {\n    bar();\n}", "    /*\n     * xx\n     */\n    // xx\n    if (foo) {\n        bar();\n    }")
+	test("if (foo)\n{}\nelse /regex/.test();")
+	test("if (foo) {")
+	test("foo {")
+	test("return {")
+	test("return /* inline */ {")
+	test("return;\n{")
+	test("throw {}")
+	test("throw {\n    foo;\n}")
+	test("var foo = {}")
+	test("function x() {\n    foo();\n}zzz", "function x() {\n    foo();\n}\nzzz")
+	test("a: do {} while (); xxx", "a: do {} while ();\nxxx")
+	test("{a: do {} while (); xxx}", "{\n    a: do {} while ();xxx\n}")
+	test("var a = new function() {};")
+	test("var a = new function a() {};")
+	test("var a = new function()\n{};", "var a = new function() {};")
+	test("var a = new function a()\n{};")
+	test("var a = new function a()\n    {},\n    b = new function b()\n    {};")
+	test("foo({\n    'a': 1\n},\n10);",
+		"foo({\n        'a': 1\n    },\n    10);")
+	test("([\"foo\",\"bar\"]).each(function(i) {return i;});", "([\"foo\", \"bar\"]).each(function(i) {\n    return i;\n});")
+	test("(function(i) {return i;})();", "(function(i) {\n    return i;\n})();")
+	test("test( /*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/ {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test(\n"+
+		"/*Argument 1*/ {\n"+
+		"    'Value1': '1'\n"+
+		"},\n"+
+		"/*Argument 2\n"+
+		" */ {\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test(\n"+
+			"    /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+	test("test( /*Argument 1*/\n"+
+		"{\n"+
+		"    'Value1': '1'\n"+
+		"}, /*Argument 2\n"+
+		" */\n"+
+		"{\n"+
+		"    'Value2': '2'\n"+
+		"});",
+
+		"test( /*Argument 1*/\n"+
+			"    {\n"+
+			"        'Value1': '1'\n"+
+			"    },\n"+
+			"    /*Argument 2\n"+
+			"     */\n"+
+			"    {\n"+
+			"        'Value2': '2'\n"+
+			"    });")
+
+	test_options["brace_style"] = "collapse"
+
+	test("a = <?= external() ?> ;")
+	test("a = <%= external() %> ;")
+
+	test("roo = {\n    /*\n    ****\n      FOO\n    ****\n    */\n    BAR: 0\n};")
+	test("if (zz) {\n    // ....\n}\n(function")
+
+	test_options["preserve_newlines"] = true
+	test("var a = 42; // foo\n\nvar b;")
+	test("var a = 42; // foo\n\n\nvar b;")
+	test("var a = 'foo' +\n    'bar';")
+	test("var a = \"foo\" +\n    \"bar\";")
+
+	test("\"foo\"\"bar\"\"baz\"", "\"foo\"\n\"bar\"\n\"baz\"")
+	test("'foo''bar''baz'", "'foo'\n'bar'\n'baz'")
+	test("{\n    get foo() {}\n}")
+	test("{\n    var a = get\n    foo();\n}")
+	test("{\n    set foo() {}\n}")
+	test("{\n    var a = set\n    foo();\n}")
+	test("var x = {\n    get function()\n}")
+	test("var x = {\n    set function()\n}")
+
+	test("var x = set\n\na() {}", "var x = set\n\na() {}")
+	test("var x = set\n\nfunction() {}", "var x = set\n\nfunction() {}")
+
+	test("<!-- foo\nbar();\n-->")
+	test("<!-- dont crash")
+	test("for () /abc/.test()")
+	test("if (k) /aaa/m.test(v) && l();")
+	test("switch (true) {\n    case /swf/i.test(foo):\n        bar();\n}")
+	test("createdAt = {\n    type: Date,\n    default: Date.now\n}")
+	test("switch (createdAt) {\n    case a:\n        Date,\n    default:\n        Date.now\n}")
+
+	test("return function();")
+	test("var a = function();")
+	test("var a = 5 + function();")
+
+	test("{\n    foo // something\n    ,\n    bar // something\n    baz\n}")
+	test("function a(a) {} function b(b) {} function c(c) {}", "function a(a) {}\n\nfunction b(b) {}\n\nfunction c(c) {}")
+
+	test("3.*7;", "3. * 7;")
+	test("a = 1.e-64 * 0.5e+4 / 6e-23;")
+	test("import foo.*;", "import foo.*;")
+	test("function f(a: a, b: b)")
+	test("foo(a, function() {})")
+	test("foo(a, /regex/)")
+
+	test("/* foo */\n\"x\"")
+
+	test_options["break_chained_methods"] = false
+	test_options["preserve_newlines"] = false
+	test("foo\n.bar()\n.baz().cucumber(fat)", "foo.bar().baz().cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat); foo.bar().baz().cucumber(fat)", "foo.bar().baz().cucumber(fat);\nfoo.bar().baz().cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat)\n foo.bar().baz().cucumber(fat)", "foo.bar().baz().cucumber(fat)\nfoo.bar().baz().cucumber(fat)")
+	test("this\n.something = foo.bar()\n.baz().cucumber(fat)", "this.something = foo.bar().baz().cucumber(fat)")
+	test("this.something.xxx = foo.moo.bar()")
+	test("this\n.something\n.xxx = foo.moo\n.bar()", "this.something.xxx = foo.moo.bar()")
+
+	test_options["break_chained_methods"] = false
+	test_options["preserve_newlines"] = true
+	test("foo\n.bar()\n.baz().cucumber(fat)", "foo\n    .bar()\n    .baz().cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat); foo.bar().baz().cucumber(fat)", "foo\n    .bar()\n    .baz().cucumber(fat);\nfoo.bar().baz().cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat)\n foo.bar().baz().cucumber(fat)", "foo\n    .bar()\n    .baz().cucumber(fat)\nfoo.bar().baz().cucumber(fat)")
+	test("this\n.something = foo.bar()\n.baz().cucumber(fat)", "this\n    .something = foo.bar()\n    .baz().cucumber(fat)")
+	test("this.something.xxx = foo.moo.bar()")
+	test("this\n.something\n.xxx = foo.moo\n.bar()", "this\n    .something\n    .xxx = foo.moo\n    .bar()")
+
+	test_options["break_chained_methods"] = true
+	test_options["preserve_newlines"] = false
+	test("foo\n.bar()\n.baz().cucumber(fat)", "foo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat); foo.bar().baz().cucumber(fat)", "foo.bar()\n    .baz()\n    .cucumber(fat);\nfoo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat)\n foo.bar().baz().cucumber(fat)", "foo.bar()\n    .baz()\n    .cucumber(fat)\nfoo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("this\n.something = foo.bar()\n.baz().cucumber(fat)", "this.something = foo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("this.something.xxx = foo.moo.bar()")
+	test("this\n.something\n.xxx = foo.moo\n.bar()", "this.something.xxx = foo.moo.bar()")
+
+	test_options["break_chained_methods"] = true
+	test_options["preserve_newlines"] = true
+	test("foo\n.bar()\n.baz().cucumber(fat)", "foo\n    .bar()\n    .baz()\n    .cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat); foo.bar().baz().cucumber(fat)", "foo\n    .bar()\n    .baz()\n    .cucumber(fat);\nfoo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("foo\n.bar()\n.baz().cucumber(fat)\n foo.bar().baz().cucumber(fat)", "foo\n    .bar()\n    .baz()\n    .cucumber(fat)\nfoo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("this\n.something = foo.bar()\n.baz().cucumber(fat)", "this\n    .something = foo.bar()\n    .baz()\n    .cucumber(fat)")
+	test("this.something.xxx = foo.moo.bar()")
+	test("this\n.something\n.xxx = foo.moo\n.bar()", "this\n    .something\n    .xxx = foo.moo\n    .bar()")
+	test_options["break_chained_methods"] = false
+	test_options["preserve_newlines"] = false
 }
 
 func test(options ...string) {
@@ -393,7 +1042,6 @@ func test(options ...string) {
 }
 
 func assertMatch(input, expect string) {
-
 	result, _ := Beautify(&input, test_options)
 
 	if result != expect {
