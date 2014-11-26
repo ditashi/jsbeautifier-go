@@ -134,7 +134,6 @@ func (self *jsbeautifier) beautify(s *string, options optargs.MapType) (string, 
 }
 
 func (self *jsbeautifier) parse_token(t tokenizer.Token) {
-
 	for _, comment_token := range t.CommentsBefore() {
 		self.handle_token(comment_token)
 	}
@@ -597,7 +596,7 @@ func (self *jsbeautifier) handle_word(current_token tokenizer.Token) {
 		prefix = "SPACE"
 	} else if self.last_type == "TK_STRING" {
 		prefix = "NEWLINE"
-	} else if self.last_type == "TK_RESERVED" || self.last_type == "TK_WORD" || (self.flags.last_text == "*" && self.last_last_text == "Function") {
+	} else if self.last_type == "TK_RESERVED" || self.last_type == "TK_WORD" || (self.flags.last_text == "*" && self.last_last_text == "function") {
 		prefix = "SPACE"
 	} else if self.last_type == "TK_START_BLOCK" {
 		prefix = "NEWLINE"
