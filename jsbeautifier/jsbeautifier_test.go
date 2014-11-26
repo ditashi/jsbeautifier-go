@@ -1029,6 +1029,472 @@ func TestBeautifier(t *testing.T) {
 	test("this\n.something\n.xxx = foo.moo\n.bar()", "this\n    .something\n    .xxx = foo.moo\n    .bar()")
 	test_options["break_chained_methods"] = false
 	test_options["preserve_newlines"] = false
+
+	wrap_input_1 := ("foo.bar().baz().cucumber((fat && \"sassy\") || (leans\n&& mean));\n" +
+		"Test_very_long_variable_name_this_should_never_wrap\n.but_this_can\n" +
+		"if (wraps_can_occur && inside_an_if_block) that_is_\n.okay();\n" +
+		"object_literal = {\n" +
+		"    propertx: first_token + 12345678.99999E-6,\n" +
+		"    property: first_token_should_never_wrap + but_this_can,\n" +
+		"    propertz: first_token_should_never_wrap + !but_this_can,\n" +
+		"    proper: \"first_token_should_never_wrap\" + \"but_this_can\"\n" +
+		"}")
+
+	wrap_input_2 := ("{\n" +
+		"    foo.bar().baz().cucumber((fat && \"sassy\") || (leans\n&& mean));\n" +
+		"    Test_very_long_variable_name_this_should_never_wrap\n.but_this_can\n" +
+		"    if (wraps_can_occur && inside_an_if_block) that_is_\n.okay();\n" +
+		"    object_literal = {\n" +
+		"        propertx: first_token + 12345678.99999E-6,\n" +
+		"        property: first_token_should_never_wrap + but_this_can,\n" +
+		"        propertz: first_token_should_never_wrap + !but_this_can,\n" +
+		"        proper: \"first_token_should_never_wrap\" + \"but_this_can\"\n" +
+		"    }" +
+		"}")
+
+	test_options["preserve_newlines"] = false
+	test_options["wrap_line_length"] = 0
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat && \"sassy\") || (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap.but_this_can\n"+
+			"if (wraps_can_occur && inside_an_if_block) that_is_.okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token + 12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap + but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap + !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" + \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 70
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat && \"sassy\") || (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap.but_this_can\n"+
+			"if (wraps_can_occur && inside_an_if_block) that_is_.okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token + 12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap + but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap + !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" + \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 40
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat &&\n"+
+			"    \"sassy\") || (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap\n"+
+			"    .but_this_can\n"+
+			"if (wraps_can_occur &&\n"+
+			"    inside_an_if_block) that_is_.okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token +\n"+
+			"        12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap +\n"+
+			"        but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap +\n"+
+			"        !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" +\n"+
+			"        \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 41
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat && \"sassy\") ||\n"+
+			"    (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap\n"+
+			"    .but_this_can\n"+
+			"if (wraps_can_occur &&\n"+
+			"    inside_an_if_block) that_is_.okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token +\n"+
+			"        12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap +\n"+
+			"        but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap +\n"+
+			"        !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" +\n"+
+			"        \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 45
+
+	test(wrap_input_2,
+
+		"{\n"+
+			"    foo.bar().baz().cucumber((fat && \"sassy\") ||\n"+
+			"        (leans && mean));\n"+
+			"    Test_very_long_variable_name_this_should_never_wrap\n"+
+			"        .but_this_can\n"+
+			"    if (wraps_can_occur &&\n"+
+			"        inside_an_if_block) that_is_.okay();\n"+
+			"    object_literal = {\n"+
+			"        propertx: first_token +\n"+
+			"            12345678.99999E-6,\n"+
+			"        property: first_token_should_never_wrap +\n"+
+			"            but_this_can,\n"+
+			"        propertz: first_token_should_never_wrap +\n"+
+			"            !but_this_can,\n"+
+			"        proper: \"first_token_should_never_wrap\" +\n"+
+			"            \"but_this_can\"\n"+
+			"    }\n"+
+			"}")
+
+	test_options["preserve_newlines"] = true
+	test_options["wrap_line_length"] = 0
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat && \"sassy\") || (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap\n"+
+			"    .but_this_can\n"+
+			"if (wraps_can_occur && inside_an_if_block) that_is_\n"+
+			"    .okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token + 12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap + but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap + !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" + \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 70
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat && \"sassy\") || (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap\n"+
+			"    .but_this_can\n"+
+			"if (wraps_can_occur && inside_an_if_block) that_is_\n"+
+			"    .okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token + 12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap + but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap + !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" + \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 40
+
+	test(wrap_input_1,
+
+		"foo.bar().baz().cucumber((fat &&\n"+
+			"    \"sassy\") || (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap\n"+
+			"    .but_this_can\n"+
+			"if (wraps_can_occur &&\n"+
+			"    inside_an_if_block) that_is_\n"+
+			"    .okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token +\n"+
+			"        12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap +\n"+
+			"        but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap +\n"+
+			"        !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" +\n"+
+			"        \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 41
+
+	test(wrap_input_1,
+		"foo.bar().baz().cucumber((fat && \"sassy\") ||\n"+
+			"    (leans && mean));\n"+
+			"Test_very_long_variable_name_this_should_never_wrap\n"+
+			"    .but_this_can\n"+
+			"if (wraps_can_occur &&\n"+
+			"    inside_an_if_block) that_is_\n"+
+			"    .okay();\n"+
+			"object_literal = {\n"+
+			"    propertx: first_token +\n"+
+			"        12345678.99999E-6,\n"+
+			"    property: first_token_should_never_wrap +\n"+
+			"        but_this_can,\n"+
+			"    propertz: first_token_should_never_wrap +\n"+
+			"        !but_this_can,\n"+
+			"    proper: \"first_token_should_never_wrap\" +\n"+
+			"        \"but_this_can\"\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 45
+
+	test(wrap_input_2,
+
+		"{\n"+
+			"    foo.bar().baz().cucumber((fat && \"sassy\") ||\n"+
+			"        (leans && mean));\n"+
+			"    Test_very_long_variable_name_this_should_never_wrap\n"+
+			"        .but_this_can\n"+
+			"    if (wraps_can_occur &&\n"+
+			"        inside_an_if_block) that_is_\n"+
+			"        .okay();\n"+
+			"    object_literal = {\n"+
+			"        propertx: first_token +\n"+
+			"            12345678.99999E-6,\n"+
+			"        property: first_token_should_never_wrap +\n"+
+			"            but_this_can,\n"+
+			"        propertz: first_token_should_never_wrap +\n"+
+			"            !but_this_can,\n"+
+			"        proper: \"first_token_should_never_wrap\" +\n"+
+			"            \"but_this_can\"\n"+
+			"    }\n"+
+			"}")
+
+	test_options["wrap_line_length"] = 0
+
+	test_options["preserve_newlines"] = false
+	test("if (foo) // comment\n    bar();")
+	test("if (foo) // comment\n    (bar());")
+	test("if (foo) // comment\n    (bar());")
+	test("if (foo) // comment\n    /asdf/;")
+	test("this.oa = new OAuth(\n"+
+		"    _requestToken,\n"+
+		"    _accessToken,\n"+
+		"    consumer_key\n"+
+		");", "this.oa = new OAuth(_requestToken, _accessToken, consumer_key);")
+	test("foo = {\n    x: y, // #44\n    w: z // #44\n}")
+	test("switch (x) {\n    case \"a\":\n        // comment on newline\n        break;\n    case \"b\": // comment on same line\n        break;\n}")
+	test("this.type =\n    this.options =\n    // comment\n    this.enabled null;", "this.type = this.options =\n    // comment\n    this.enabled null;")
+	test("someObj\n    .someFunc1()\n    // This comment should not break the indent\n    .someFunc2();", "someObj.someFunc1()\n    // This comment should not break the indent\n    .someFunc2();")
+
+	test("if (true ||\n!true) return;", "if (true || !true) return;")
+
+	test("if\n(foo)\nif\n(bar)\nif\n(baz)\nwhee();\na();", "if (foo)\n    if (bar)\n        if (baz) whee();\na();")
+	test("if\n(foo)\nif\n(bar)\nif\n(baz)\nwhee();\nelse\na();", "if (foo)\n    if (bar)\n        if (baz) whee();\n        else a();")
+	test("if (foo)\nbar();\nelse\ncar();", "if (foo) bar();\nelse car();")
+
+	test("if (foo) if (bar) if (baz);\na();", "if (foo)\n    if (bar)\n        if (baz);\na();")
+	test("if (foo) if (bar) if (baz) whee();\na();", "if (foo)\n    if (bar)\n        if (baz) whee();\na();")
+	test("if (foo) a()\nif (bar) if (baz) whee();\na();", "if (foo) a()\nif (bar)\n    if (baz) whee();\na();")
+	test("if (foo);\nif (bar) if (baz) whee();\na();", "if (foo);\nif (bar)\n    if (baz) whee();\na();")
+	test("if (options)\n"+"    for (var p in options)\n"+"        this[p] = options[p];", "if (options)\n"+"    for (var p in options) this[p] = options[p];")
+	test("if (options) for (var p in options) this[p] = options[p];", "if (options)\n    for (var p in options) this[p] = options[p];")
+
+	test("if (options) do q(); while (b());", "if (options)\n    do q(); while (b());")
+	test("if (options) while (b()) q();", "if (options)\n    while (b()) q();")
+	test("if (options) do while (b()) q(); while (a());", "if (options)\n    do\n        while (b()) q(); while (a());")
+
+	test("function f(a, b, c,\nd, e) {}", "function f(a, b, c, d, e) {}")
+
+	test("function f(a,b) {if(a) b()}function g(a,b) {if(!a) b()}", "function f(a, b) {\n    if (a) b()\n}\n\nfunction g(a, b) {\n    if (!a) b()\n}")
+	test("function f(a,b) {if(a) b()}\n\n\n\nfunction g(a,b) {if(!a) b()}", "function f(a, b) {\n    if (a) b()\n}\n\nfunction g(a, b) {\n    if (!a) b()\n}")
+
+	test("(if(a) b())(if(a) b())", "(\n    if (a) b())(\n    if (a) b())")
+	test("(if(a) b())\n\n\n(if(a) b())", "(\n    if (a) b())\n(\n    if (a) b())")
+
+	test("/*\n * foo\n */\nfunction foo() {}")
+	test("// a nice function\nfunction foo() {}")
+	test("function foo() {}\nfunction foo() {}", "function foo() {}\n\nfunction foo() {}")
+
+	test("[\n    function() {}\n]")
+
+	test("if\n(a)\nb();", "if (a) b();")
+	test("var a =\nfoo", "var a = foo")
+	test("var a = {\n\"a\":1,\n\"b\":2}", "var a = {\n    \"a\": 1,\n    \"b\": 2\n}")
+	test("var a = {\n'a':1,\n'b':2}", "var a = {\n    'a': 1,\n    'b': 2\n}")
+	test("var a = /*i*/ \"b\";")
+	test("var a = /*i*/\n\"b\";", "var a = /*i*/ \"b\";")
+	test("var a = /*i*/\nb;", "var a = /*i*/ b;")
+	test("{\n\n\n\"x\"\n}", "{\n    \"x\"\n}")
+	test("if(a &&\nb\n||\nc\n||d\n&&\ne) e = f", "if (a && b || c || d && e) e = f")
+	test("if(a &&\n(b\n||\nc\n||d)\n&&\ne) e = f", "if (a && (b || c || d) && e) e = f")
+	test("\n\n\"x\"", "\"x\"")
+	test("a = 1;\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nb = 2;", "a = 1;\nb = 2;")
+
+	test_options["preserve_newlines"] = true
+	test("if (foo) // comment\n    bar();")
+	test("if (foo) // comment\n    (bar());")
+	test("if (foo) // comment\n    (bar());")
+	test("if (foo) // comment\n    /asdf/;")
+	test("this.oa = new OAuth(\n" + "    _requestToken,\n" + "    _accessToken,\n" + "    consumer_key\n" + ");")
+	test("foo = {\n    x: y, // #44\n    w: z // #44\n}")
+	test("switch (x) {\n    case \"a\":\n        // comment on newline\n        break;\n    case \"b\": // comment on same line\n        break;\n}")
+	test("this.type =\n    this.options =\n    // comment\n    this.enabled null;")
+	test("someObj\n    .someFunc1()\n    // This comment should not break the indent\n    .someFunc2();")
+
+	test("if (true ||\n!true) return;", "if (true ||\n    !true) return;")
+
+	test("if\n(foo)\nif\n(bar)\nif\n(baz)\nwhee();\na();", "if (foo)\n    if (bar)\n        if (baz)\n            whee();\na();")
+	test("if\n(foo)\nif\n(bar)\nif\n(baz)\nwhee();\nelse\na();", "if (foo)\n    if (bar)\n        if (baz)\n            whee();\n        else\n            a();")
+	test("if (foo) bar();\nelse\ncar();", "if (foo) bar();\nelse\n    car();")
+
+	test("if (foo) if (bar) if (baz);\na();", "if (foo)\n    if (bar)\n        if (baz);\na();")
+	test("if (foo) if (bar) if (baz) whee();\na();", "if (foo)\n    if (bar)\n        if (baz) whee();\na();")
+	test("if (foo) a()\nif (bar) if (baz) whee();\na();", "if (foo) a()\nif (bar)\n    if (baz) whee();\na();")
+	test("if (foo);\nif (bar) if (baz) whee();\na();", "if (foo);\nif (bar)\n    if (baz) whee();\na();")
+	test("if (options)\n" + "    for (var p in options)\n" + "        this[p] = options[p];")
+	test("if (options) for (var p in options) this[p] = options[p];", "if (options)\n    for (var p in options) this[p] = options[p];")
+
+	test("if (options) do q(); while (b());", "if (options)\n    do q(); while (b());")
+	test("if (options) do; while (b());", "if (options)\n    do; while (b());")
+	test("if (options) while (b()) q();", "if (options)\n    while (b()) q();")
+	test("if (options) do while (b()) q(); while (a());", "if (options)\n    do\n        while (b()) q(); while (a());")
+
+	test("function f(a, b, c,\nd, e) {}", "function f(a, b, c,\n    d, e) {}")
+
+	test("function f(a,b) {if(a) b()}function g(a,b) {if(!a) b()}", "function f(a, b) {\n    if (a) b()\n}\n\nfunction g(a, b) {\n    if (!a) b()\n}")
+	test("function f(a,b) {if(a) b()}\n\n\n\nfunction g(a,b) {if(!a) b()}", "function f(a, b) {\n    if (a) b()\n}\n\n\n\nfunction g(a, b) {\n    if (!a) b()\n}")
+
+	test("(if(a) b())(if(a) b())", "(\n    if (a) b())(\n    if (a) b())")
+	test("(if(a) b())\n\n\n(if(a) b())", "(\n    if (a) b())\n\n\n(\n    if (a) b())")
+
+	test("if\n(a)\nb();", "if (a)\n    b();")
+	test("var a =\nfoo", "var a =\n    foo")
+	test("var a = {\n\"a\":1,\n\"b\":2}", "var a = {\n    \"a\": 1,\n    \"b\": 2\n}")
+	test("var a = {\n'a':1,\n'b':2}", "var a = {\n    'a': 1,\n    'b': 2\n}")
+	test("var a = /*i*/ \"b\";")
+	test("var a = /*i*/\n\"b\";", "var a = /*i*/\n    \"b\";")
+	test("var a = /*i*/\nb;", "var a = /*i*/\n    b;")
+	test("{\n\n\n\"x\"\n}", "{\n\n\n    \"x\"\n}")
+	test("if(a &&\nb\n||\nc\n||d\n&&\ne) e = f", "if (a &&\n    b ||\n    c || d &&\n    e) e = f")
+	test("if(a &&\n(b\n||\nc\n||d)\n&&\ne) e = f", "if (a &&\n    (b ||\n        c || d) &&\n    e) e = f")
+	test("\n\n\"x\"", "\"x\"")
+
+	test("a = 1;\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nb = 2;", "a = 1;\n\n\n\n\n\n\n\n\n\nb = 2;")
+	test_options["max_preserve_newlines"] = 8
+	test("a = 1;\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nb = 2;", "a = 1;\n\n\n\n\n\n\n\nb = 2;")
+
+	test_options["space_in_paren"] = false
+	test_options["space_in_empty_paren"] = false
+	test("if(p) foo(a,b)", "if (p) foo(a, b)")
+	test("try{while(true){willThrow()}}catch(result)switch(result){case 1:++result }", "try {\n    while (true) {\n        willThrow()\n    }\n} catch (result) switch (result) {\n    case 1:\n        ++result\n}")
+	test("((e/((a+(b)*c)-d))^2)*5;", "((e / ((a + (b) * c) - d)) ^ 2) * 5;")
+	test("function f(a,b) {if(a) b()}function g(a,b) {if(!a) b()}", "function f(a, b) {\n    if (a) b()\n}\n\nfunction g(a, b) {\n    if (!a) b()\n}")
+	test("a=[];", "a = [];")
+	test("a=[b,c,d];", "a = [b, c, d];")
+	test("a= f[b];", "a = f[b];")
+
+	test_options["space_in_paren"] = true
+	test("if(p) foo(a,b)", "if ( p ) foo( a, b )")
+	test("try{while(true){willThrow()}}catch(result)switch(result){case 1:++result }", "try {\n    while ( true ) {\n        willThrow()\n    }\n} catch ( result ) switch ( result ) {\n    case 1:\n        ++result\n}")
+	test("((e/((a+(b)*c)-d))^2)*5;", "( ( e / ( ( a + ( b ) * c ) - d ) ) ^ 2 ) * 5;")
+	test("function f(a,b) {if(a) b()}function g(a,b) {if(!a) b()}", "function f( a, b ) {\n    if ( a ) b()\n}\n\nfunction g( a, b ) {\n    if ( !a ) b()\n}")
+	test("a=[ ];", "a = [];")
+	test("a=[b,c,d];", "a = [ b, c, d ];")
+	test("a= f[b];", "a = f[ b ];")
+
+	test_options["space_in_empty_paren"] = true
+	test("if(p) foo(a,b)", "if ( p ) foo( a, b )")
+	test("try{while(true){willThrow()}}catch(result)switch(result){case 1:++result }", "try {\n    while ( true ) {\n        willThrow( )\n    }\n} catch ( result ) switch ( result ) {\n    case 1:\n        ++result\n}")
+	test("((e/((a+(b)*c)-d))^2)*5;", "( ( e / ( ( a + ( b ) * c ) - d ) ) ^ 2 ) * 5;")
+	test("function f(a,b) {if(a) b()}function g(a,b) {if(!a) b()}", "function f( a, b ) {\n    if ( a ) b( )\n}\n\nfunction g( a, b ) {\n    if ( !a ) b( )\n}")
+	test("a=[ ];", "a = [ ];")
+	test("a=[b,c,d];", "a = [ b, c, d ];")
+	test("a= f[b];", "a = f[ b ];")
+
+	test_options["space_in_paren"] = false
+	test_options["space_in_empty_paren"] = false
+
+	test("`This is a ${template} string.`", "`This is a ${template} string.`")
+	test("`This\n  is\n  a\n  ${template}\n  string.`", "`This\n  is\n  a\n  ${template}\n  string.`")
+
+	/* # Test that e4x literals passed through when e4x-option is enabled
+	   test("xml=<a b="c"><d/><e>\n foo</e>x</a>;', 'xml = < a b = "c" > < d / > < e >\n    foo < /e>x</a > ;")
+	   test_options["e4x"] = true
+	   test("xml=<a b="c"><d/><e>\n foo</e>x</a>;', 'xml = <a b="c"><d/><e>\n foo</e>x</a>;")
+	   test("<a b=\'This is a quoted "c".\'/>', '<a b=\'This is a quoted "c".\'/>")
+	   test("<a b="This is a quoted \'c\'."/>', '<a b="This is a quoted \'c\'."/>")
+	   test("<a b="A quote \' inside string."/>', '<a b="A quote \' inside string."/>")
+	   test("<a b=\'A quote " inside string.\'/>', '<a b=\'A quote " inside string.\'/>")
+	   test("<a b=\'Some """ quotes ""  inside string.\'/>', '<a b=\'Some """ quotes ""  inside string.\'/>")
+	   # Handles inline expressions
+	   test("xml=<{a} b="c"><d/><e v={z}>\n foo</e>x</{a}>;', 'xml = <{a} b="c"><d/><e v={z}>\n foo</e>x</{a}>;")
+	   # xml literals with special characters in elem names
+	   test("xml = <_:.valid.xml- _:.valid.xml-="123"/>;', 'xml = <_:.valid.xml- _:.valid.xml-="123"/>;")
+	   # Handles CDATA
+	   test("xml=<a b="c"><![CDATA[d/>\n</a></{}]]></a>;', 'xml = <a b="c"><![CDATA[d/>\n</a></{}]]></a>;")
+	   test("xml=<![CDATA[]]>;', 'xml = <![CDATA[]]>;")
+	   test("xml=<![CDATA[ b="c"><d/><e v={z}>\n foo</e>x/]]>;', 'xml = <![CDATA[ b="c"><d/><e v={z}>\n foo</e>x/]]>;")
+	   # Handles messed up tags, as long as it isn't the same name
+	   # as the root tag. Also handles tags of same name as root tag
+	   # as long as nesting matches.
+	   test("xml=<a x="jn"><c></b></f><a><d jnj="jnn"><f></a ></nj></a>;',
+	    'xml = <a x="jn"><c></b></f><a><d jnj="jnn"><f></a ></nj></a>;")
+	   # If xml is not terminated, the remainder of the file is treated
+	   # as part of the xml-literal (passed through unaltered)
+	   test('xml=<a></b>\nc<b;', 'xml = <a></b>\nc<b;")
+	   test_options["e4x"] = false
+	*/
+
+	test("obj\n" + "    .last({\n" + "        foo: 1,\n" + "        bar: 2\n" + "    });\n" + "var test = 1;")
+
+	test("obj\n" + "    .last(a, function() {\n" + "        var test;\n" + "    });\n" + "var test = 1;")
+
+	test("obj.first()\n" + "    .second()\n" + "    .last(function(err, response) {\n" + "        console.log(err);\n" + "    });")
+
+	test("obj.last(a, function() {\n" + "    var test;\n" + "});\n" + "var test = 1;")
+
+	test("obj.last(a,\n" + "    function() {\n" + "        var test;\n" + "    });\n" + "var test = 1;")
+
+	test("(function() {if (!window.FOO) window.FOO || (window.FOO = function() {var b = {bar: \"zort\"};});})();", "(function() {\n"+"    if (!window.FOO) window.FOO || (window.FOO = function() {\n"+"        var b = {\n"+"            bar: \"zort\"\n"+"        };\n"+"    });\n"+"})();")
+
+	test("define([\"dojo/_base/declare\", \"my/Employee\", \"dijit/form/Button\",\n" + "    \"dojo/_base/lang\", \"dojo/Deferred\"\n" + "], function(declare, Employee, Button, lang, Deferred) {\n" + "    return declare(Employee, {\n" + "        constructor: function() {\n" + "            new Button({\n" + "                onClick: lang.hitch(this, function() {\n" + "                    new Deferred().then(lang.hitch(this, function() {\n" + "                        this.salary * 0.25;\n" + "                    }));\n" + "                })\n" + "            });\n" + "        }\n" + "    });\n" + "});")
+	test("define([\"dojo/_base/declare\", \"my/Employee\", \"dijit/form/Button\",\n" + "        \"dojo/_base/lang\", \"dojo/Deferred\"\n" + "    ],\n" + "    function(declare, Employee, Button, lang, Deferred) {\n" + "        return declare(Employee, {\n" + "            constructor: function() {\n" + "                new Button({\n" + "                    onClick: lang.hitch(this, function() {\n" + "                        new Deferred().then(lang.hitch(this, function() {\n" + "                            this.salary * 0.25;\n" + "                        }));\n" + "                    })\n" + "                });\n" + "            }\n" + "        });\n" + "    });")
+
+	test("(function() {\n" +
+		"    return {\n" +
+		"        foo: function() {\n" +
+		"            return \"bar\";\n" +
+		"        },\n" +
+		"        bar: [\"bar\"]\n" +
+		"    };\n" +
+		"}());")
+
+	test("var name = \"a;\n" + "name = \"b\";")
+	test("var name = \"a; \\\n" + "    name = b\";")
+
+	test("var c = \"_ACTION_TO_NATIVEAPI_\" + ++g++ + +new Date;")
+	test("var c = \"_ACTION_TO_NATIVEAPI_\" - --g-- - -new Date;")
+
+	test("a = {\n" + "    function: {},\n" + "    \"function\": {},\n" + "    throw: {},\n" + "    \"throw\": {},\n" + "    var: {},\n" + "    \"var\": {},\n" + "    set: {},\n" + "    \"set\": {},\n" + "    get: {},\n" + "    \"get\": {},\n" + "    if: {},\n" + "    \"if\": {},\n" + "    then: {},\n" + "    \"then\": {},\n" + "    else: {},\n" + "    \"else\": {},\n" + "    yay: {}\n" + "};")
+
+	test("if(x){a();}else{b();}if(y){c();}", "if (x) {\n"+"    a();\n"+"} else {\n"+"    b();\n"+"}\n"+"if (y) {\n"+"    c();\n"+"}")
+
+	test("var v = [\"a\",\n" + "    function() {\n" + "        return;\n" + "    }, {\n" + "        id: 1\n" + "    }\n" + "];")
+	test("var v = [\"a\", function() {\n" + "    return;\n" + "}, {\n" + "    id: 1\n" + "}];")
+
+	test("module \"Even\" {\n" + "    import odd from \"Odd\";\n" + "    export function sum(x, y) {\n" + "        return x + y;\n" + "    }\n" + "    export var pi = 3.141593;\n" + "    export default moduleName;\n" + "}")
+	test("module \"Even\" {\n" + "    export default function div(x, y) {}\n" + "}")
+
+	test("set[\"name\"]")
+	test("get[\"name\"]")
+	test("a = {\n" + "    set b(x) {},\n" + "    c: 1,\n" + "    d: function() {}\n" + "};")
+	test("a = {\n" + "    get b() {\n" + "        retun 0;\n" + "    },\n" + "    c: 1,\n" + "    d: function() {}\n" + "};")
+
+	test("'use strict';\n" +
+		"if ([].some(function() {\n" +
+		"        return false;\n" +
+		"    })) {\n" +
+		"    console.log('hello');\n" +
+		"}")
+
+	test("class Test {\n" +
+		"    blah: string[];\n" +
+		"    foo(): number {\n" +
+		"        return 0;\n" +
+		"    }\n" +
+		"    bar(): number {\n" +
+		"        return 0;\n" +
+		"    }\n" +
+		"}")
+	test("interface Test {\n" +
+		"    blah: string[];\n" +
+		"    foo(): number {\n" +
+		"        return 0;\n" +
+		"    }\n" +
+		"    bar(): number {\n" +
+		"        return 0;\n" +
+		"    }\n" +
+		"}")
+
+	test("var a=1,b={bang:2},c=3;", "var a = 1,\n    b = {\n        bang: 2\n    },\n    c = 3;")
+	test("var a={bing:1},b=2,c=3;", "var a = {\n        bing: 1\n    },\n    b = 2,\n    c = 3;")
 }
 
 func test(options ...string) {
