@@ -270,7 +270,7 @@ func TestBeautifier(t *testing.T) {
 	test("#!she/bangs, she bangs\n\nf=1", "#!she/bangs, she bangs\n\nf = 1")
 	test("#!she/bangs, she bangs\n\n/* comment */")
 	test("#!she/bangs, she bangs\n\n\n/* comment */")
-	/*test("#")
+	test("#")
 	test("#!")
 	test("function namespace::something()")
 	test("<!--\nsomething();\n-->")
@@ -282,7 +282,7 @@ func TestBeautifier(t *testing.T) {
 	test("if(true)++a;", "if (true) ++a;")
 	test("if(true)\n++a;", "if (true)\n    ++a;")
 	test("if(true)--a;", "if (true) --a;")
-	test("if(true)\n--a;", "if (true)\n    --a;")*/
+	test("if(true)\n--a;", "if (true)\n    --a;")
 
 	// Handling of newlines around unary ++ and -- operators
 	test("{foo\n++bar;}", "{\n    foo\n    ++bar;\n}")
