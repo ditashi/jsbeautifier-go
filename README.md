@@ -23,7 +23,7 @@ Implemented most of the original features from jsbeautifier (missing featuers ar
 
 ### Testing
 From within the source folder run:
-``` go test ./... ```` or use something like [goconvey](https://github.com/smartystreets/goconvey)
+``` go test ./... ``` or use something like [goconvey](https://github.com/smartystreets/goconvey)
 
 ## Options
 
