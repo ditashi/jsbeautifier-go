@@ -8,7 +8,7 @@ This is a port of the awesome [jsbeautifier](http://jsbeautifier.org/) tool to g
 Granted this is a very basic and naive attempt since this is one of my first takes with golang.
 
 ## Current state
-Implemented most of the original features from jsbeautifier (missing featuers are listed in the following section).
+Implemented most of the original features from jsbeautifier (missing features are listed in the following section).
 
 ## What doesn't work
 * Unpacking & Deobfuscation (and with that code eval)
