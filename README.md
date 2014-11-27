@@ -12,7 +12,6 @@ Implemented most of the original features from jsbeautifier (missing featuers ar
 
 ## What doesn't work
 * Unpacking & Deobfuscation (and with that code eval)
-* e4x xml parsing
 * Reading from stdin
 
 ## Priority
