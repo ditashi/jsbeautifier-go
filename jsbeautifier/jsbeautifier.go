@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"jsbeautifier/optargs"
 	"jsbeautifier/tokenizer"
+	"jsbeautifier/unpackers"
 	"jsbeautifier/utils"
 	"strings"
 )
@@ -100,7 +101,7 @@ const (
 )
 
 func (self *jsbeautifier) unpack(s *string, eval_code bool) *string {
-	return s
+	return unpackers.Run(s)
 }
 
 func (self *jsbeautifier) beautify(s *string, options optargs.MapType) (string, error) {
