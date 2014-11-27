@@ -1394,33 +1394,28 @@ func TestBeautifier(t *testing.T) {
 	test("`This is a ${template} string.`", "`This is a ${template} string.`")
 	test("`This\n  is\n  a\n  ${template}\n  string.`", "`This\n  is\n  a\n  ${template}\n  string.`")
 
-	/* # Test that e4x literals passed through when e4x-option is enabled
-	   test("xml=<a b="c"><d/><e>\n foo</e>x</a>;', 'xml = < a b = "c" > < d / > < e >\n    foo < /e>x</a > ;")
-	   test_options["e4x"] = true
-	   test("xml=<a b="c"><d/><e>\n foo</e>x</a>;', 'xml = <a b="c"><d/><e>\n foo</e>x</a>;")
-	   test("<a b=\'This is a quoted "c".\'/>', '<a b=\'This is a quoted "c".\'/>")
-	   test("<a b="This is a quoted \'c\'."/>', '<a b="This is a quoted \'c\'."/>")
-	   test("<a b="A quote \' inside string."/>', '<a b="A quote \' inside string."/>")
-	   test("<a b=\'A quote " inside string.\'/>', '<a b=\'A quote " inside string.\'/>")
-	   test("<a b=\'Some """ quotes ""  inside string.\'/>', '<a b=\'Some """ quotes ""  inside string.\'/>")
-	   # Handles inline expressions
-	   test("xml=<{a} b="c"><d/><e v={z}>\n foo</e>x</{a}>;', 'xml = <{a} b="c"><d/><e v={z}>\n foo</e>x</{a}>;")
-	   # xml literals with special characters in elem names
-	   test("xml = <_:.valid.xml- _:.valid.xml-="123"/>;', 'xml = <_:.valid.xml- _:.valid.xml-="123"/>;")
-	   # Handles CDATA
-	   test("xml=<a b="c"><![CDATA[d/>\n</a></{}]]></a>;', 'xml = <a b="c"><![CDATA[d/>\n</a></{}]]></a>;")
-	   test("xml=<![CDATA[]]>;', 'xml = <![CDATA[]]>;")
-	   test("xml=<![CDATA[ b="c"><d/><e v={z}>\n foo</e>x/]]>;', 'xml = <![CDATA[ b="c"><d/><e v={z}>\n foo</e>x/]]>;")
-	   # Handles messed up tags, as long as it isn't the same name
-	   # as the root tag. Also handles tags of same name as root tag
-	   # as long as nesting matches.
-	   test("xml=<a x="jn"><c></b></f><a><d jnj="jnn"><f></a ></nj></a>;',
-	    'xml = <a x="jn"><c></b></f><a><d jnj="jnn"><f></a ></nj></a>;")
-	   # If xml is not terminated, the remainder of the file is treated
-	   # as part of the xml-literal (passed through unaltered)
-	   test('xml=<a></b>\nc<b;', 'xml = <a></b>\nc<b;")
-	   test_options["e4x"] = false
-	*/
+	test("xml=<a b=\"c\"><d/><e>\n foo</e>x</a>;", "xml = < a b = \"c\" > < d / > < e >\n    foo < /e>x</a > ;")
+	test_options["e4x"] = true
+
+	test("xml=<a b=\"c\"><d/><e>\n foo</e>x</a>;", "xml = <a b=\"c\"><d/><e>\n foo</e>x</a>;")
+	test("<a b='This is a quoted \"c\".'/>", "<a b='This is a quoted \"c\".'/>")
+	test("<a b=\"This is a quoted 'c'.\"/>", "<a b=\"This is a quoted 'c'.\"/>")
+	test("<a b=\"A quote ' inside string.\"/>", "<a b=\"A quote ' inside string.\"/>")
+	test("<a b='A quote \" inside string.'/>", "<a b='A quote \" inside string.'/>")
+	test("<a b='Some \"\"\" quotes \"\"  inside string.'/>", "<a b='Some \"\"\" quotes \"\"  inside string.'/>")
+
+	test("xml=<{a} b=\"c\"><d/><e v={z}>\n foo</e>x</{a}>;", "xml = <{a} b=\"c\"><d/><e v={z}>\n foo</e>x</{a}>;")
+
+	test("xml = <_:.valid.xml- _:.valid.xml-=\"123\"/>;", "xml = <_:.valid.xml- _:.valid.xml-=\"123\"/>;")
+
+	test("xml=<a b=\"c\"><![CDATA[d/>\n</a></{}]]></a>;", "xml = <a b=\"c\"><![CDATA[d/>\n</a></{}]]></a>;")
+	test("xml=<![CDATA[]]>;", "xml = <![CDATA[]]>;")
+	test("xml=<![CDATA[ b=\"c\"><d/><e v={z}>\n foo</e>x/]]>;", "xml = <![CDATA[ b=\"c\"><d/><e v={z}>\n foo</e>x/]]>;")
+
+	test("xml=<a x=\"jn\"><c></b></f><a><d jnj=\"jnn\"><f></a ></nj></a>;", "xml = <a x=\"jn\"><c></b></f><a><d jnj=\"jnn\"><f></a ></nj></a>;")
+
+	test("xml=<a></b>\nc<b;", "xml = <a></b>\nc<b;")
+	test_options["e4x"] = false
 
 	test("obj\n" + "    .last({\n" + "        foo: 1,\n" + "        bar: 2\n" + "    });\n" + "var test = 1;")
 

@@ -313,14 +313,47 @@ func (self *tokenizer) getNextToken() (string, string) {
 
 			}
 		} else if self.options["e4x"].(bool) && sep == "<" { // xml
-			panic("e4x parsing is not implement yet")
-			// TODO: Implement e4x
-			/*xmlRegExp, _ := regexp.Compile(`<(\/?)(!\[CDATA\[[\s\S]*?\]\]|[-a-zA-Z:0-9_.]+|\{[^{}]*\})\s*([-a-zA-Z:0-9_.]+=(\{[^{}]*\}|"[^"]*"|\'[^\']*\')\s*)*(\/?)\s*>`)
+			xmlRegExp := regexp.MustCompile(`<(\/?)(!\[CDATA\[[\s\S]*?\]\]|[-a-zA-Z:0-9_.]+|\{[^{}]*\})\s*([-a-zA-Z:0-9_.]+=(\{[^{}]*\}|"[^"]*"|\'[^\']*\')\s*)*(\/?)\s*>`)
 			xmlStr := (*self.input)[self.parser_pos-1:]
-			match = xmlRegExp.Match([]byte(xmlStr))
-			if match {
+			match := xmlRegExp.FindStringSubmatch((xmlStr))
 
-			}*/
+			if match != nil {
+				rootTag := match[2]
+				depth := 0
+				lastPos := 0
+				for match != nil {
+					isEndTag := match[1]
+					tagName := match[2]
+					isSingeltonTag := (match[len(match)-1] != "") || (strings.HasPrefix(match[2], "![CDATA["))
+					if tagName == rootTag && !isSingeltonTag {
+						if isEndTag != "" {
+							depth -= 1
+						} else {
+							depth += 1
+						}
+					}
+
+					if depth <= 0 {
+						break
+					}
+
+					indices := xmlRegExp.FindStringSubmatchIndex(xmlStr[lastPos:])
+					lastPos += indices[1]
+
+					match = xmlRegExp.FindStringSubmatch(xmlStr[lastPos:])
+				}
+				xmlLength := 0
+				if match != nil {
+					indices := xmlRegExp.FindStringSubmatchIndex(xmlStr[lastPos:])
+					xmlLength = lastPos + indices[1]
+				} else {
+					xmlLength = len(xmlStr)
+				}
+
+				self.parser_pos += xmlLength - 1
+
+				return xmlStr[:xmlLength], "TK_STRING"
+			}
 
 		} else { // string
 			for self.parser_pos < len(*self.input) && (esc || (self.GetNextChar() != sep && (sep == "`" || !self.acorn.GetNewline().Match([]byte(self.GetNextChar()))))) {
