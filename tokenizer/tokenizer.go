@@ -406,9 +406,10 @@ func (self *tokenizer) getNextToken() (string, string) {
 	}
 
 	if c == "#" {
+
 		if self.tokens_parsed == 0 && len(*self.input) > self.parser_pos && self.GetNextChar() == "!" {
 			resulting_string := c
-			for self.parser_pos <= len(*self.input) && c != "\n" {
+			for self.parser_pos < len(*self.input) && c != "\n" {
 				c = self.AdvanceNextChar()
 				resulting_string += c
 			}
