@@ -65,6 +65,7 @@ Options:
 	outfile := "stdout"
 
 	options := jsbeautifier.DefaultOptions()
+
 	if arguments.Bool["--keep-array-indentation"] {
 		options["keep_array_indentation"] = true
 	}
@@ -79,7 +80,11 @@ Options:
 		options["indent_size"] = int(options["indent_size"].(int64))
 	}
 	if arguments.String["--indent-char"] != "" {
-		options["indent_char"] = arguments.String["--indent_char"]
+		if arguments.String["--indent-char"] == "space" {
+			options["indent_char"] = " "
+		} else {
+			options["indent_char"] = arguments.String["--indent_char"]
+		}
 	}
 	if arguments.Bool["--indent-with-tabs"] {
 		options["indent_with_tabs"] = true
@@ -121,6 +126,7 @@ Options:
 	}
 
 	code := jsbeautifier.BeautifyFile(file, options)
+
 	if outfile == "stdout" {
 		fmt.Print(*code)
 	} else {
