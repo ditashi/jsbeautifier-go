@@ -3,11 +3,12 @@ package jsbeautifier
 import (
 	"errors"
 	"io/ioutil"
+	"strings"
+
 	"jsbeautifier/optargs"
 	"jsbeautifier/tokenizer"
 	"jsbeautifier/unpackers"
 	"jsbeautifier/utils"
-	"strings"
 )
 
 // Copyright (c) 2014 Ditashi Sayomi
@@ -104,15 +105,15 @@ func (self *jsbeautifier) unpack(s *string, eval_code bool) *string {
 	return unpackers.Run(s)
 }
 
-func (self *jsbeautifier) beautify(s *string, options optargs.MapType) (string, error) {
+func (self *jsbeautifier) beautify(s *string) (string, error) {
 
-	if !utils.InStrArray(options["brace_style"].(string), []string{"expand", "collapse", "end-expand", "none"}) {
+	if !utils.InStrArray(self.options["brace_style"].(string), []string{"expand", "collapse", "end-expand", "none"}) {
 		return "", errors.New("opts.brace-style must be \"expand\", \"collapse\", \"end-exapnd\", or \"none\".")
 	}
 
 	s = self.blank_state(s)
 
-	input := self.unpack(s, options["eval_code"].(bool))
+	input := self.unpack(s, self.options["eval_code"].(bool))
 	t := tokenizer.New(input, self.options, "    ")
 	self.tkch = t.Tokenize()
 	self.token_pos = 0
@@ -127,7 +128,7 @@ func (self *jsbeautifier) beautify(s *string, options optargs.MapType) (string, 
 	}
 
 	sweet_code := self.output.get_code()
-	if options["end_with_newline"].(bool) {
+	if self.options["end_with_newline"].(bool) {
 		sweet_code += "\n"
 	}
 
@@ -956,7 +957,7 @@ func New(options optargs.MapType) *jsbeautifier {
 
 func Beautify(data *string, options optargs.MapType) (string, error) {
 	b := New(options)
-	return b.beautify(data, options)
+	return b.beautify(data)
 }
 
 func BeautifyFile(file string, options optargs.MapType) *string {
