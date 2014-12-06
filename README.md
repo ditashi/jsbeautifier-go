@@ -1,6 +1,6 @@
 
 
-jsbeautifier-go ![Travis build status](https://api.travis-ci.org/ditashi/jsbeautifier-go.svg?branch=master)
+jsbeautifier-go [![Travis build status](https://api.travis-ci.org/ditashi/jsbeautifier-go.svg?branch=master)](https://travis-ci.org/ditashi/jsbeautifier-go)
 ===============
 
 A golang port of the awesome jsbeautifier tool
