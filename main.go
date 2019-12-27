@@ -130,7 +130,7 @@ Options:
 	if outfile == "stdout" {
 		fmt.Print(*code)
 	} else {
-		ioutil.WriteFile(file, []byte(*code), 0777)
+		ioutil.WriteFile(outfile, []byte(*code), 0777)
 	}
 
 }
